@@ -40,6 +40,8 @@ Rcpp::List bayesLasso(vec y, mat X, vec alpha, double tol) { //tol is 1e-6
   double lambda_0 = 1;
   
   double sdy = stddev(y);
+  double sigma_sq = sdy*sdy;
+  double sigma = sdy;
   double conv = 1;
   double edf = 0;
   double GCV = 0;
@@ -56,18 +58,22 @@ Rcpp::List bayesLasso(vec y, mat X, vec alpha, double tol) { //tol is 1e-6
         XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6;    
       }
       beta_last = beta;
-      uvec update_ind = find(abs(beta) > tol*sdy);
+      // Only select submatrix after the first iteration
+      if(i == 0) uvec update_ind = find(abs(beta) > -1);
+      if(i > 0) uvec update_ind = find(abs(beta) > tol*sdy);
+      
       beta(update_ind) = solve(XpXsolve.submat(update_ind,update_ind),Xpy.rows(update_ind));
       fits = X*beta;
       for (int j= 1; j < p; ++j) {
-        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sdy)+pow(lambda_0,-2);
-        Etausqinv(j)  = lambda_0/abs(beta(j))*sdy;
+        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2);
+        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma;
       }
       Etausqinv(0) = 0;
       Ewtsqtausq(0) = 0;
       
       lambda_0 = sqrt((alpha(0) - 1)/(sum(Ewtsqtausq)/2 + 1));
-      //sigma_sq = (sum((y - fits) % (y - fits)) + sum(beta % beta % Etausqinv/2))/(n/2 + p/2 + 1);
+      sigma_sq = (sum((y - fits) % (y - fits)) + sum(beta % beta % Etausqinv/2))/(n/2 + p/2 + 1);
+      sigma = sqrt(sigma_sq);
       
       conv = max(abs(beta - beta_last));
     }
