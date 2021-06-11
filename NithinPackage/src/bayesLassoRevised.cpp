@@ -101,7 +101,8 @@ List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just ta
 }
 
 //[[Rcpp::export]]
-vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) { 
+
+vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol, bool gcv) { 
   int n = X.n_rows;
   int p = X.n_cols;
   vec Ewtsqtausq = ones(p);
@@ -160,72 +161,12 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) {
     edf = trace(XpX.submat(update_ind,update_ind)*pinv(XpXsolve.submat(update_ind,update_ind)));
     double den = (n-log(n)/2*edf);
     GCV = sum((y-fits)%(y-fits))/(den*den);
+  }
+  vec G{GCV};
+  if (gcv) {
+    return G;
   }
   return Etausqinv; //List::create(GCV, Etausqinv);
-}
-
-//[[Rcpp::export]]
-double G(vec y, mat X, double alpha, vec Etausqinv, double tol) { 
-  int n = X.n_rows;
-  int p = X.n_cols;
-  vec Ewtsqtausq = ones(p);
-  mat XpX = X.t()*X;
-  mat Xpy = X.t()*y;
-  mat XpXsolve = XpX;
-  vec fits = zeros(n);
-  double lambda_0 = 1;
-  
-  double sdy = stddev(y);
-  double sigma_sq = sdy*sdy;
-  double sigma = sdy;
-  double conv = 1;
-  double edf = 0;
-  double GCV = 0;
-  
-  vec beta = zeros(p);
-  vec beta_last = beta;
-  
-  int iters = 500; //I like to put constants like this as their own variables, so we can change the value later easily
-  
-  for (int i = 0; i < iters; ++i) {
-    
-    if (conv/sdy > tol) {
-      for (int j = 1; j < p; ++j) {
-        XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6;    
-      }
-      beta_last = beta;
-      // Only select submatrix after the first iteration
-      
-      uvec update_ind;
-      
-      if(i == 0) {
-        update_ind = find(abs(beta) > -1);  
-      }
-      else {
-        update_ind = find(abs(beta) > tol*sdy); 
-      }
-      
-      beta(update_ind) = solve(XpXsolve.submat(update_ind,update_ind),Xpy.rows(update_ind));
-      fits = X*beta;
-      for (int j= 1; j < p; ++j) {
-        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2);
-        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma;
-      }
-      Etausqinv(0) = 0;
-      Ewtsqtausq(0) = 0;
-      
-      lambda_0 = sqrt((alpha - 1)/(sum(Ewtsqtausq)/2 + 1));
-      sigma_sq = (sum((y - fits) % (y - fits)) + sum(beta % beta % Etausqinv/2))/(n/2 + p/2 + 1);
-      sigma = sqrt(sigma_sq);
-      
-      conv = max(abs(beta - beta_last));
-    }
-    uvec update_ind = find(abs(beta) > tol*sdy );
-    edf = trace(XpX.submat(update_ind,update_ind)*pinv(XpXsolve.submat(update_ind,update_ind)));
-    double den = (n-log(n)/2*edf);
-    GCV = sum((y-fits)%(y-fits))/(den*den);
-  }
-  return GCV; //List::create(GCV, Etausqinv);
 }
 
 //[[Rcpp::export]]
@@ -233,9 +174,10 @@ vec GCV(vec y, mat X, vec alphas, vec Etausqinv, double tol) {
   vec GCVs = alphas;
   int p = alphas.n_rows;
   for (int i = 0; i < p; ++i) {
-    Etausqinv = updateEtausqinv(y, X, alphas(i), Etausqinv, tol);
+    vec G = updateEtausqinv(y, X, alphas(i), Etausqinv, tol, true);
+    Etausqinv = updateEtausqinv(y, X, alphas(i), Etausqinv, tol, false);
     //Etausqinv = tuple[1];
-    GCVs(i) = G(y, X, alphas(i), Etausqinv, tol);
+    GCVs(i) = G(0);
   }
     
   return GCVs;
@@ -258,37 +200,5 @@ int main() {
 }
 
 /*** R
-#library(PLCE)
-library(profvis)
-library(microbenchmark)
-library(lme4)
-library(grf)
-# devtools::load_all('~/Dropbox/InfluenceFunctions/APSRsubmission/03_Public/Code/PLCE')
-
-
-options(device="quartz")
-# rm(list=ls())
-ran.num<-round(runif(1)*1e8)
-
-## Starting time 430480
-
-## First point estimate: 0.8677028 
-theta.run<-se.run<-cover.run<-NULL
-n<-200
-k<-100
-
-##Format data
-set.seed(1)
-var.mat   <- diag(k)
-var.mat[var.mat==0] <- 0.5
-# covariates
-
-X <- MASS::mvrnorm(n, rep(0, k), Sig = var.mat)
-beta.true <- rep(0,p)
-beta.true[1:4] <- rep(1,-1,.5,-.5)
-y <- X%*%beta.true + rnorm(n,sd=4)
-
-
-coef <-bayesLasso(y = y, X = X, alpha = p+1, tol = .Machine$double.eps^.5 )
-coef[1:10]
+main()
 */
