@@ -258,5 +258,37 @@ int main() {
 }
 
 /*** R
-main()
+#library(PLCE)
+library(profvis)
+library(microbenchmark)
+library(lme4)
+library(grf)
+# devtools::load_all('~/Dropbox/InfluenceFunctions/APSRsubmission/03_Public/Code/PLCE')
+
+
+options(device="quartz")
+# rm(list=ls())
+ran.num<-round(runif(1)*1e8)
+
+## Starting time 430480
+
+## First point estimate: 0.8677028 
+theta.run<-se.run<-cover.run<-NULL
+n<-200
+k<-100
+
+##Format data
+set.seed(1)
+var.mat   <- diag(k)
+var.mat[var.mat==0] <- 0.5
+# covariates
+
+X <- MASS::mvrnorm(n, rep(0, k), Sig = var.mat)
+beta.true <- rep(0,p)
+beta.true[1:4] <- rep(1,-1,.5,-.5)
+y <- X%*%beta.true + rnorm(n,sd=4)
+
+
+coef <-bayesLasso(y = y, X = X, alpha = p+1, tol = .Machine$double.eps^.5 )
+coef[1:10]
 */
