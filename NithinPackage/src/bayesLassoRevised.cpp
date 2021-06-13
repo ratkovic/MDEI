@@ -102,7 +102,9 @@ List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just ta
 
 //[[Rcpp::export]]
 
-vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol, bool gcv) { 
+vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) { 
+  assert(alpha >= 1);
+  Etausqinv(0) = 0; //zero out the GCV from previous
   int n = X.n_rows;
   int p = X.n_cols;
   vec Ewtsqtausq = ones(p);
@@ -123,7 +125,6 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol, bool 
   vec beta_last = beta;
   
   int iters = 500; //I like to put constants like this as their own variables, so we can change the value later easily
-  
   for (int i = 0; i < iters; ++i) {
     
     if (conv/sdy > tol) {
@@ -162,11 +163,8 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol, bool 
     double den = (n-log(n)/2*edf);
     GCV = sum((y-fits)%(y-fits))/(den*den);
   }
-  vec G{GCV};
-  if (gcv) {
-    return G;
-  }
-  return Etausqinv; //List::create(GCV, Etausqinv);
+  Etausqinv(0) = GCV;
+  return Etausqinv;
 }
 
 //[[Rcpp::export]]
@@ -174,13 +172,11 @@ vec GCV(vec y, mat X, vec alphas, vec Etausqinv, double tol) {
   vec GCVs = alphas;
   int p = alphas.n_rows;
   for (int i = 0; i < p; ++i) {
-    vec G = updateEtausqinv(y, X, alphas(i), Etausqinv, tol, true);
-    Etausqinv = updateEtausqinv(y, X, alphas(i), Etausqinv, tol, false);
-    //Etausqinv = tuple[1];
-    GCVs(i) = G(0);
+    Etausqinv = updateEtausqinv(y, X, alphas(i), Etausqinv, tol);
+    GCVs(i) = Etausqinv(0);
   }
     
-  return GCVs;
+  return GCVs; //GCVs;
 }
 
 //[[Rcpp::export]]
@@ -188,11 +184,9 @@ int main() {
   vec y{3, 1, 4, 1};
   mat X{{2, 7, 1},{8, 2, 8}, {1, 8, 2}, {8, 4, 5}};
   
-  vec alphas{1.2,3.4,5.6,7.8};
+  vec alphas{1.1,1.2,1.3,10.1,10.2,10.3,100.1,100.2,100.3};
   vec Etausqinv{1, 1, 1};
   double tol = 1e-6;
-  //alphas.print();
-  //cout << alphas.n_rows << endl;
   vec GCVs = GCV(y, X, alphas, Etausqinv, tol);
   GCVs.print();
   
