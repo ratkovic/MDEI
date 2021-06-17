@@ -4,6 +4,8 @@
 #include "RcppArmadillo.h"
 #include <RcppArmadilloExtensions/sample.h>
 #include "splines2Armadillo.h"
+#include <queue>
+#include <vector>
 
 using namespace arma;
 using namespace Rcpp;
@@ -57,13 +59,13 @@ mat dbs2(vec x, unsigned int deg) {
 //[[Rcpp::export]]
 mat bsme(vec x) {
   
-  mat m = join_rows(bs2(x, 3), bs2(x, 4), bs2(x, 5), bs2(x, 6));
+  mat m = join_rows(x, bs2(x, 4), bs2(x, 5), bs2(x, 6));
   return m;
 }
 //[[Rcpp::export]]
 mat dbsme(vec x) {
   
-  mat m = join_rows(dbs2(x, 3), dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
+  mat m = join_rows(x, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
   return m;
 }
 
@@ -74,19 +76,18 @@ mat makebs(vec x) {
 
 mat splineBases(vec x) {
   mat Xbs;
-  for (int i = 0; i < X.n_rows; ++i) {
-    Xbs = join_rows(Xbs, makebs(X));
+  for (int i = 0; i < x.n_rows; ++i) {
+    Xbs = join_rows(Xbs, makebs(x));
   }
   return Xbs;
 }
 
-/*//[[Rcpp::export]]
-void subSamp(vec v) {
-  auto ve = RcppArmadillo::sample(v, v.size()/2, false);
-  ve.print();
-}*/
-
 //[[Rcpp::export]]
+vec subSamp(vec v) {
+  auto ve = Rcpp::RcppArmadillo::sample(v, v.size()/2, false);;
+  return ve;
+}
+
 struct Comp {
   
   public:
@@ -97,20 +98,46 @@ struct Comp {
 };
 
 //[[Rcpp::export]]
-List function(int obs, int covs, mat Xbs, vec y, vec treat, int k) {//k is number of top results, i.e. top 100 or top 300
+List correlations(int obs, mat Xbs, vec y, vec treat, int a) {//a is number of top results, i.e. top 100 or top 300
+  
+  vec v = ones(obs);
+  for (int i = 1; i < obs + 1; ++i) {
+    v(i - 1) = i;
+  }
   
   mat treatbs = bsme(treat);
-  auto subsamp = sample(v, n/2, false);
+  auto sample = subSamp(v);
+  
+  mat treatSubsamp = zeros(obs/2, treatbs.n_cols);
+  mat XSubsamp = zeros(obs/2, Xbs.n_cols);
+  vec ySubsamp = zeros(obs/2);
+  
+  for (int i = 0; i < obs/2; ++i) {
+    for (int j = 0; j < treatbs.n_cols; ++j) {
+      treatSubsamp(i, j) = treatbs(sample(i), j);
+      XSubsamp(i, j) = Xbs(sample(i), j);
+      ySubsamp(i) = y(sample(i));
+    }  
+  }
+  
+  treatSubsamp = treatSubsamp.t();
+  XSubsamp = XSubsamp.t();
+  
+  cout << treatSubsamp(0, 0) << endl;
+  //cout << XSubsamp(0) << endl;
+  
   priority_queue<vec, vector<vec>, Comp> pq;
   
   for (int i = 0; i < treatbs.n_cols; ++i) {
     for (int j = 0; j < Xbs.n_cols; ++j) {
       for (int k = j; k < Xbs.n_cols; ++k) {
-        double inter_temp = treatbs(subsamp, i)*Xbs(subsamp, j)*Xbs(subsamp, k);
-        double cor_temp = cor(y[subsamp], inter_temp);
+        vec inter_temp = treatSubsamp.row(i) % XSubsamp.row(j) % XSubsamp.row(k); 
+        //inter_temp.print();
+        cout << cor(ySubsamp, inter_temp) << endl;
+        auto cor_temp = 0; //cor(ySubsamp, inter_temp);
         vec indexCurr{i, j, k, cor_temp};
         pq.push(indexCurr);
-        if (pq.size() > k) {
+        if (pq.size() > a) {
           pq.pop();
         }
       }
@@ -120,15 +147,16 @@ List function(int obs, int covs, mat Xbs, vec y, vec treat, int k) {//k is numbe
   while (!pq.empty()) {
     L.push_back(pq.top());
     pq.pop();
+    //cout << pq.top()(3) << endl;
   }
-  return L;
-}
+  return L; //returns k highest correlations
+} 
 
 
 //[[Rcpp::export]]
 int main() {
-  vec x{1,2,3,4};
-  subSamp(x);
+  vec x{1, 2, 3, 4, 5, 6};
+  correlations(4, bsme(x), x, x, 2);
   return 0;
 }
 
