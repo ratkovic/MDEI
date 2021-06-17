@@ -43,11 +43,19 @@ void splineMatrix(vec y) {
   c.print();
   
 }
+//[[Rcpp::export]]
+int fib(int n) {
+  if (n < 2) {
+    return n;
+  }
+  return fib(n - 1) + fib(n - 2);
+}
 
 //[[Rcpp::export]]
 int main() {
   vec y{3,1,4,2,5};
   splineMatrix(y);
+  //cout << fib(12) << endl;
   return 0;
 }
 
