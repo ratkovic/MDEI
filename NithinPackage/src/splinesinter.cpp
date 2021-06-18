@@ -68,12 +68,12 @@ mat dbsme(vec x) {
   mat m = join_rows(x, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
   return m;
 }
-
+//[[Rcpp::export]]
 mat makebs(vec x) {
   vec v = ones(x.n_rows);
   return join_rows(v, bsme(x));
 }
-
+//[[Rcpp::export]]
 mat splineBases(vec x, int covs) {
   mat Xbs;
   for (int i = 0; i < covs; ++i) {
@@ -91,7 +91,7 @@ struct Comp {
   
   public:
     bool operator()(vec a, vec b) {
-      return a(3) < b(3);
+      return a(3) > b(3);
     }
   
 };
@@ -121,22 +121,22 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
     }  
   }
   
-  //treatSubsamp = treatSubsamp.t();
-  //XSubsamp = XSubsamp.t();
-  
-  //cout << treatSubsamp(0, 0) << endl;
-  //cout << XSubsamp(0) << endl;
-  
   priority_queue<vec, vector<vec>, Comp> pq;
   vec zero_vec = zeros(Xbs.n_cols);
+  double sdy = stddev(ySubsamp);
   
   for (double i = 0; i < treatbs.n_cols; ++i) {
     for (double j = 0; j < Xbs.n_cols; ++j) {
       for (double k = j; k < Xbs.n_cols; ++k) {
         vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
-        double cor_temp = 0;
+        /*double cor_temp = 0;
         if (approx_equal(zero_vec, inter_temp, "absdiff", 0.001)) {
           cor_temp = as_scalar(cor(ySubsamp, inter_temp));
+        }*/
+        double cor_temp = 0;
+        double sdinter = stddev(inter_temp);
+        if (sdinter != 0) {
+          cor_temp = as_scalar(cov(inter_temp, ySubsamp)/(sdinter*sdy));
         }
         vec indexCurr{i, j, k, cor_temp};
         pq.push(indexCurr);
@@ -154,12 +154,25 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
   }
   return L; //returns k highest correlations
 } 
-
+//[[Rcpp::export]]
+mat gramschmidt(vec y, mat X) {
+  double m = 0;
+  double index = -1;
+  for (int i = 0; i < X.n_cols; ++i) {
+    vec col = X.col(i);
+    if (as_scalar(cor(col, y)) > m) {
+      index = i;
+      m = as_scalar(cor(col, y));
+    }
+  }
+  
+}
 
 //[[Rcpp::export]]
 int main() {
-  vec x{3,1,4,1};
-  correlations(4, 2, x, x, x, 2);
+  vec x{3,1,4,1,5,9,2,6,5,3,5,8,9};
+  correlations(6, 4, x, x, x, 3);
+  
   return 0;
 }
 
