@@ -34,7 +34,7 @@ mat bs2(vec x, unsigned int deg) {
   mat c = b2.basis();
   vec l = zeros(b.n_rows);
   int row_size = c.n_cols;
-  for (int i = 0; i < b.n_rows; ++i) {
+  for (unsigned int i = 0; i < b.n_rows; ++i) {
     l(i) = c(i, row_size - 1);
   }
   
@@ -49,7 +49,7 @@ mat dbs2(vec x, unsigned int deg) {
   mat db2 = b2.derivative();
   vec l = zeros(db1.n_rows);
   int row_size = db2.n_cols;
-  for (int i = 0; i < db1.n_rows; ++i) {
+  for (unsigned int i = 0; i < db1.n_rows; ++i) {
     l(i) = db2(i, row_size - 1);
   }
   
@@ -74,9 +74,9 @@ mat makebs(vec x) {
   return join_rows(v, bsme(x));
 }
 
-mat splineBases(vec x) {
+mat splineBases(vec x, int covs) {
   mat Xbs;
-  for (int i = 0; i < x.n_rows; ++i) {
+  for (int i = 0; i < covs; ++i) {
     Xbs = join_rows(Xbs, makebs(x));
   }
   return Xbs;
@@ -84,8 +84,7 @@ mat splineBases(vec x) {
 
 //[[Rcpp::export]]
 vec subSamp(vec v) {
-  auto ve = Rcpp::RcppArmadillo::sample(v, v.size()/2, false);;
-  return ve;
+  return Rcpp::RcppArmadillo::sample(v, v.size()/2, false);
 }
 
 struct Comp {
@@ -98,43 +97,47 @@ struct Comp {
 };
 
 //[[Rcpp::export]]
-List correlations(int obs, mat Xbs, vec y, vec treat, int a) {//a is number of top results, i.e. top 100 or top 300
+List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned int a) {//a is number of top results, i.e. top 100 or top 300
   
   vec v = ones(obs);
-  for (int i = 1; i < obs + 1; ++i) {
-    v(i - 1) = i;
+  for (int i = 0; i < obs; ++i) {
+    v(i) = i;
   }
   
+  mat Xbs = splineBases(x, covs);
+  
   mat treatbs = bsme(treat);
-  auto sample = subSamp(v);
+  vec sample = subSamp(v);
   
   mat treatSubsamp = zeros(obs/2, treatbs.n_cols);
   mat XSubsamp = zeros(obs/2, Xbs.n_cols);
   vec ySubsamp = zeros(obs/2);
   
   for (int i = 0; i < obs/2; ++i) {
-    for (int j = 0; j < treatbs.n_cols; ++j) {
+    for (unsigned int j = 0; j < treatbs.n_cols; ++j) {
       treatSubsamp(i, j) = treatbs(sample(i), j);
       XSubsamp(i, j) = Xbs(sample(i), j);
       ySubsamp(i) = y(sample(i));
     }  
   }
   
-  treatSubsamp = treatSubsamp.t();
-  XSubsamp = XSubsamp.t();
+  //treatSubsamp = treatSubsamp.t();
+  //XSubsamp = XSubsamp.t();
   
-  cout << treatSubsamp(0, 0) << endl;
+  //cout << treatSubsamp(0, 0) << endl;
   //cout << XSubsamp(0) << endl;
   
   priority_queue<vec, vector<vec>, Comp> pq;
+  vec zero_vec = zeros(Xbs.n_cols);
   
-  for (int i = 0; i < treatbs.n_cols; ++i) {
-    for (int j = 0; j < Xbs.n_cols; ++j) {
-      for (int k = j; k < Xbs.n_cols; ++k) {
-        vec inter_temp = treatSubsamp.row(i) % XSubsamp.row(j) % XSubsamp.row(k); 
-        //inter_temp.print();
-        cout << cor(ySubsamp, inter_temp) << endl;
-        auto cor_temp = 0; //cor(ySubsamp, inter_temp);
+  for (double i = 0; i < treatbs.n_cols; ++i) {
+    for (double j = 0; j < Xbs.n_cols; ++j) {
+      for (double k = j; k < Xbs.n_cols; ++k) {
+        vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
+        double cor_temp = 0;
+        if (approx_equal(zero_vec, inter_temp, "absdiff", 0.001)) {
+          cor_temp = as_scalar(cor(ySubsamp, inter_temp));
+        }
         vec indexCurr{i, j, k, cor_temp};
         pq.push(indexCurr);
         if (pq.size() > a) {
@@ -147,7 +150,7 @@ List correlations(int obs, mat Xbs, vec y, vec treat, int a) {//a is number of t
   while (!pq.empty()) {
     L.push_back(pq.top());
     pq.pop();
-    //cout << pq.top()(3) << endl;
+    cout << pq.top()(3) << endl;
   }
   return L; //returns k highest correlations
 } 
@@ -155,8 +158,8 @@ List correlations(int obs, mat Xbs, vec y, vec treat, int a) {//a is number of t
 
 //[[Rcpp::export]]
 int main() {
-  vec x{1, 2, 3, 4, 5, 6};
-  correlations(4, bsme(x), x, x, 2);
+  vec x{3,1,4,1};
+  correlations(4, 2, x, x, x, 2);
   return 0;
 }
 
