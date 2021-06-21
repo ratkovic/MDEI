@@ -72,6 +72,9 @@ mat dbsme(vec x) {
 //[[Rcpp::export]]
 mat makebs(vec x) {
   vec v = ones(x.n_rows);
+  if (unique(x).size() <= 3) {
+    return join_rows(v, x);
+  }
   return join_rows(v, bsme(x));
 }
 //[[Rcpp::export]]
@@ -114,7 +117,7 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
   mat XSubsamp = zeros(obs/2, Xbs.n_cols);
   vec ySubsamp = zeros(obs/2);
   
-  for (int i = 0; i < obs/2; ++i) {
+  for (int i = 0; i < obs/2; ++i) { //this just gets the certain rows/entries corresponding to the random sample
     for (unsigned int j = 0; j < treatbs.n_cols; ++j) {
       treatSubsamp(i, j) = treatbs(sample(i), j);
       XSubsamp(i, j) = Xbs(sample(i), j);
@@ -132,7 +135,7 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
         vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         double cor_temp = 0;
-        if (approx_equal(zero_vec, inter_temp, "absdiff", 0)) {
+        if (!approx_equal(zero_vec, inter_temp, "absdiff", 0)) {
           cor_temp = as_scalar(cor(ySubsamp, inter_temp));
         }
         
@@ -167,9 +170,8 @@ mat gramschmidt(vec y, mat X) { //not finished yet. Right now it just finds the 
 
 //[[Rcpp::export]]
 int main() {
-  vec x;
-  x.randn(1000);
-  BSpline{x, 4};
+  
+  //functions can be called inside of main
   
   return 0;
 }
