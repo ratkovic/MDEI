@@ -6,6 +6,7 @@
 #include "splines2Armadillo.h"
 #include <queue>
 #include <vector>
+#include <time.h>
 
 using namespace arma;
 using namespace Rcpp;
@@ -87,7 +88,7 @@ vec subSamp(vec v) {
   return Rcpp::RcppArmadillo::sample(v, v.size()/2, false);
 }
 
-struct Comp {
+struct Comp { //this is a comparator, used for the heap (priority_queue) in the function below
   
   public:
     bool operator()(vec a, vec b) {
@@ -124,38 +125,35 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
   priority_queue<vec, vector<vec>, Comp> pq;
   vec zero_vec = zeros(Xbs.n_cols);
   double sdy = stddev(ySubsamp);
-  
+
   for (double i = 0; i < treatbs.n_cols; ++i) {
     for (double j = 0; j < Xbs.n_cols; ++j) {
       for (double k = j; k < Xbs.n_cols; ++k) {
         vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
-        /*double cor_temp = 0;
-        if (approx_equal(zero_vec, inter_temp, "absdiff", 0.001)) {
-          cor_temp = as_scalar(cor(ySubsamp, inter_temp));
-        }*/
+        
         double cor_temp = 0;
-        double sdinter = stddev(inter_temp);
-        if (sdinter != 0) {
-          cor_temp = as_scalar(cov(inter_temp, ySubsamp)/(sdinter*sdy));
+        if (approx_equal(zero_vec, inter_temp, "absdiff", 0)) {
+          cor_temp = as_scalar(cor(ySubsamp, inter_temp));
         }
+        
         vec indexCurr{i, j, k, cor_temp};
         pq.push(indexCurr);
-        if (pq.size() > a) {
+        if (pq.size() > a) { //this keeps the size to exactly a
           pq.pop();
         }
       }
     }
   }
+
   List L;
   while (!pq.empty()) {
     L.push_back(pq.top());
     pq.pop();
-    cout << pq.top()(3) << endl;
   }
   return L; //returns k highest correlations
 } 
 //[[Rcpp::export]]
-mat gramschmidt(vec y, mat X) {
+mat gramschmidt(vec y, mat X) { //not finished yet. Right now it just finds the column with the max correlation
   double m = 0;
   double index = -1;
   for (int i = 0; i < X.n_cols; ++i) {
@@ -165,13 +163,13 @@ mat gramschmidt(vec y, mat X) {
       m = as_scalar(cor(col, y));
     }
   }
-  
 }
 
 //[[Rcpp::export]]
 int main() {
-  vec x{3,1,4,1,5,9,2,6,5,3,5,8,9};
-  correlations(6, 4, x, x, x, 3);
+  vec x;
+  x.randn(1000);
+  BSpline{x, 4};
   
   return 0;
 }
