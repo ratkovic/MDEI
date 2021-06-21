@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 #include <time.h>
+#include <map>
 
 using namespace arma;
 using namespace Rcpp;
@@ -72,7 +73,11 @@ mat dbsme(vec x) {
 //[[Rcpp::export]]
 mat makebs(vec x) {
   vec v = ones(x.n_rows);
-  if (unique(x).size() <= 3) {
+  map<int, int> m;
+  for (int i = 0; i < x.size(); ++i) {
+    m[x(i)]++;
+  }
+  if (m.size() <= 3) {
     return join_rows(v, x);
   }
   return join_rows(v, bsme(x));
@@ -126,7 +131,6 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
   }
   
   priority_queue<vec, vector<vec>, Comp> pq;
-  vec zero_vec = zeros(Xbs.n_cols);
   double sdy = stddev(ySubsamp);
 
   for (double i = 0; i < treatbs.n_cols; ++i) {
@@ -135,13 +139,13 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
         vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         double cor_temp = 0;
-        if (!approx_equal(zero_vec, inter_temp, "absdiff", 0)) {
+        if (!inter_temp.is_zero()) {
           cor_temp = as_scalar(cor(ySubsamp, inter_temp));
         }
         
         vec indexCurr{i, j, k, cor_temp};
         pq.push(indexCurr);
-        if (pq.size() > a) { //this keeps the size to exactly a
+        if (pq.size() > a) { //this keeps the size of the heap to exactly a
           pq.pop();
         }
       }
@@ -153,7 +157,7 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
     L.push_back(pq.top());
     pq.pop();
   }
-  return L; //returns k highest correlations
+  return L; //returns a highest correlations
 } 
 //[[Rcpp::export]]
 mat gramschmidt(vec y, mat X) { //not finished yet. Right now it just finds the column with the max correlation
@@ -172,7 +176,6 @@ mat gramschmidt(vec y, mat X) { //not finished yet. Right now it just finds the 
 int main() {
   
   //functions can be called inside of main
-  
   return 0;
 }
 
