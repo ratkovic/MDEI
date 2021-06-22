@@ -120,3 +120,48 @@ gramschmidt<-function(y,X,X.cor=NULL, weights.lm){
   X2<-X2[,colMeans(is.na(X2))==0]
   X2
 }
+
+
+
+#####  Reflating bases
+##  Make treatment effect bases w/o checking correlations ----
+make.justbaseste<-function(rest,resy,X,inter.schedule,tspline,tspline.del,Xte,ste, quants,lms,X.lin=NULL){
+  n<-length(rest)
+  ## B-spline of treatment ----
+  tspline<-cbind(rest,bs.me(rest))
+  tspline.del<-cbind(rest*0+1,dbs.me(rest))
+  nc<-ncol(tspline)-1
+  colnames(tspline.del)<-colnames(tspline)<-c("treatlin",paste("treatspline",1:nc,"_"))
+  #paste("treatbs3",1:3,sep= "_"),paste("treatbs5",1:5,sep= "_"))
+  
+  baseste<-cbind(as.vector(rest),apply(inter.schedule,1,construct.cort,tspline0=tspline,Xt0=Xte))
+  baseste.del<-cbind(1,apply(inter.schedule,1,construct.cort,tspline0=tspline.del,Xt0=Xte))
+  colnames(baseste.del)<-colnames(baseste)<-c(
+    "treat",#paste("treat",colnames(X2),sep=":"),
+    apply(inter.schedule,1,names.cort,tspline0=tspline,Xt0=Xte)   
+  )
+  
+  keeps<-check.cor(baseste,thresh=1e-5,nruns=5)$k
+  output<-list("baseste.del"=baseste.del[,keeps],"baseste"=baseste[,keeps])
+  return(output)
+}
+
+##  For removing correlated columns ----
+check.cor<-function(X,thresh=0,nruns=3){
+  if(length(thresh)==0) thresh<-ifelse(ncol(X)>100,0.001,0.0001)
+  drops.run<-rep(0,ncol(X))
+  for(j in 1:nruns){
+    drops<-rep(0,ncol(X))
+    cor1<-as.vector(abs(cor(X,rnorm(nrow(X)))))
+    for(i in 1:(ncol(X)-1)){
+      cor.temp<-cor1[(i+1):ncol(X)]
+      drops[(i+1):ncol(X)][abs(cor.temp-cor1[i])<thresh]<- -1
+    }
+    drops.run<-drops+drops.run
+  }
+  keeps<-drops.run!=(-nruns)
+  out1<-list("keeps"=keeps)
+  return(out1)	
+}
+
+
