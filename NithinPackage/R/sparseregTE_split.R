@@ -656,9 +656,9 @@ isis.te<-function(rest,X,resy,quants,lms,id=NULL){
 
 
 ##  Bspline functions, adding a curve shooting up on both sides ----
-bSpline2<-function(x,...){
-  b1<-bSpline(x,...)
-  b2<-bSpline(-x,...)
+bSpline2<-function(x,df){
+  b1<-bSpline(x,df)
+  b2<-bSpline(-x,df)
   cbind(b2[,ncol(b2)],b1)
 }
 
@@ -673,7 +673,7 @@ dbs2<-function(x,...){
 bs.me<-function(x){
   #sd.x<-sd(x)
   #x<-x/sd.x
-  m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4),bSpline2(x,df=5),bSpline2(x,df=6))
+  m2<-cbind(x,bSpline2(x,df=4),bSpline2(x,df=5),bSpline2(x,df=6))
   return(m2)
   
 }
@@ -684,7 +684,7 @@ dbs.me<-function(x){
   sd.x<-1
   #sd.x<-sd(x)
   #x<-x/sd.x
-  m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4),dbs2(x,df=5),dbs2(x,df=6))
+  m1<-cbind(1,dbs2(x,df=4),dbs2(x,df=5),dbs2(x,df=6))
   return(m1/sd.x)
   
 }

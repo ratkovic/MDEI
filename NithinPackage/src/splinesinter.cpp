@@ -66,12 +66,18 @@ mat bsme(vec x) {
 }
 //[[Rcpp::export]]
 mat dbsme(vec x) {
-  
-  mat m = join_rows(x, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
+  vec v = ones(x.size());
+  mat m = join_rows(v, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
   return m;
 }
 //[[Rcpp::export]]
-mat makebs(vec x) {
+mat makebs(mat X) {
+  
+  for (int i = 0; i < X.n_cols; ++i) {
+    X.col(i) = (X.col(i) - mean(X.col(i)))/stddev(X.col(i));
+  }
+  
+  vec x = X.as_col();
   vec v = ones(x.n_rows);
   map<int, int> m;
   for (int i = 0; i < x.size(); ++i) {
@@ -83,10 +89,10 @@ mat makebs(vec x) {
   return join_rows(v, bsme(x));
 }
 //[[Rcpp::export]]
-mat splineBases(vec x, int covs) {
+mat splineBases(mat X, int covs) {
   mat Xbs;
   for (int i = 0; i < covs; ++i) {
-    Xbs = join_rows(Xbs, makebs(x));
+    Xbs = join_rows(Xbs, makebs(X));
   }
   return Xbs;
 }
@@ -106,14 +112,14 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned int a) {//a is number of top results, i.e. top 100 or top 300
+List correlations(int obs, int covs, mat X, vec y, vec treat, long long unsigned int a) {//a is number of top results, i.e. top 100 or top 300
   
   vec v = ones(obs);
   for (int i = 0; i < obs; ++i) {
     v(i) = i;
   }
   
-  mat Xbs = splineBases(x, covs);
+  mat Xbs = splineBases(X, covs);
   
   mat treatbs = bsme(treat);
   vec sample = subSamp(v);
@@ -140,7 +146,7 @@ List correlations(int obs, int covs, vec x, vec y, vec treat, long long unsigned
         
         double cor_temp = 0;
         if (!inter_temp.is_zero()) {
-          cor_temp = as_scalar(cor(ySubsamp, inter_temp));
+          cor_temp = abs(as_scalar(cor(ySubsamp, inter_temp)));
         }
         
         vec indexCurr{i, j, k, cor_temp};
@@ -175,7 +181,14 @@ mat gramschmidt(vec y, mat X) { //not finished yet. Right now it just finds the 
 //[[Rcpp::export]]
 int main() {
   
-  //functions can be called inside of main
+  mat X = randn(1000, 5);
+  vec treat = randn(1000);
+  vec y = randn(1000);
+  bsme(y);
+  /*clock_t a = clock();
+  correlations(1000, 5, X, y, treat, 100);
+  clock_t b = clock();
+  cout << double(b - a)/CLOCKS_PER_SEC << endl;*/
   return 0;
 }
 

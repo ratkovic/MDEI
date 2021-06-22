@@ -1,6 +1,6 @@
 library(splines2)
 ## Source functions
-#source('C:\\Users\\think\\OneDrive\\Documents\\R\\win-library\\4.1')
+source('C:\\Users\\think\\OneDrive\\Documents\\NithinPackage\\R\\sparseregTE_split.R')
 
 ## Will need splines2, randomForest, coop, RcppEigen, Rfast
 
@@ -163,5 +163,3 @@ check.cor<-function(X,thresh=0,nruns=3){
   out1<-list("keeps"=keeps)
   return(out1)	
 }
-
-
