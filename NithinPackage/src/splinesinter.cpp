@@ -146,7 +146,7 @@ List correlations(int obs, int covs, mat X, vec y, vec treat, long long unsigned
         
         double cor_temp = 0;
         if (!inter_temp.is_zero()) {
-          cor_temp = abs(as_scalar(cor(ySubsamp, inter_temp)));
+          double cor_temp = abs(as_scalar(cor(ySubsamp, inter_temp)));
         }
         
         vec indexCurr{i, j, k, cor_temp};
@@ -163,8 +163,33 @@ List correlations(int obs, int covs, mat X, vec y, vec treat, long long unsigned
     L.push_back(pq.top());
     pq.pop();
   }
+  
+  mat M;
+
+  for (int i = 0; i < L.size(); ++i) {
+    vec indexCurr = L[i];
+    vec interTemp = treatSubsamp.col(indexCurr(0)) % XSubsamp.col(indexCurr(1)) % XSubsamp.col(indexCurr(2));
+    M = join_rows(M, interTemp);
+  }
+  
+  L.push_back(M);
+  
   return L; //returns a highest correlations
 } 
+
+//[[Rcpp::export]]
+vec checkcor(mat cors, double thresh) {
+  vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
+  for (int i = 0; i < cors.n_rows; ++i) {
+    for (int j = i; j < cors.n_cols; ++j) {
+      if (abs(cors(i, j)) > thresh) {
+        v(j) = 0;
+      }
+    }
+  }
+  return v; //vars marked zero are ones to not include
+}
+ 
 //[[Rcpp::export]]
 mat gramschmidt(vec y, mat X) { //not finished yet. Right now it just finds the column with the max correlation
   double m = 0;
@@ -184,11 +209,11 @@ int main() {
   mat X = randn(1000, 5);
   vec treat = randn(1000);
   vec y = randn(1000);
-  bsme(y);
-  /*clock_t a = clock();
-  correlations(1000, 5, X, y, treat, 100);
+  //bsme(y);
+  clock_t a = clock();
+  List L = correlations(1000, 5, X, y, treat, 100);
   clock_t b = clock();
-  cout << double(b - a)/CLOCKS_PER_SEC << endl;*/
+  cout << double(b - a)/CLOCKS_PER_SEC << endl;
   return 0;
 }
 
