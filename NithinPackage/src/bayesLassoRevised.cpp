@@ -168,7 +168,9 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) {
 }
 
 //[[Rcpp::export]]
-vec GCV(vec y, mat X, vec alphas, vec Etausqinv, double tol) {
+vec GCV(vec y, mat X, vec alphas, double tol) {
+  vec Etausqinv(X.n_cols + 1);
+  Etausqinv.fill(alphas(0)*stddev(y));
   vec GCVs = alphas;
   int p = alphas.n_rows;
   for (int i = 0; i < p; ++i) {
@@ -176,7 +178,7 @@ vec GCV(vec y, mat X, vec alphas, vec Etausqinv, double tol) {
     GCVs(i) = Etausqinv(0);
   }
     
-  return GCVs; //GCVs;
+  return GCVs;
 }
 
 //[[Rcpp::export]]
@@ -185,9 +187,8 @@ int main() {
   mat X{{2, 7, 1},{8, 2, 8}, {1, 8, 2}, {8, 4, 5}};
   
   vec alphas{1.1,1.2,1.3,10.1,10.2,10.3,100.1,100.2,100.3};
-  vec Etausqinv{1, 1, 1};
   double tol = 1e-6;
-  vec GCVs = GCV(y, X, alphas, Etausqinv, tol);
+  vec GCVs = GCV(y, X, alphas, tol);
   GCVs.print();
   
   return 0;

@@ -181,10 +181,15 @@ List correlations(int obs, int covs, mat X, vec y, vec treat, long long unsigned
 vec checkcor(mat cors, double thresh) {
   vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
   for (int i = 0; i < cors.n_rows; ++i) {
-    for (int j = i; j < cors.n_cols; ++j) {
-      if (abs(cors(i, j)) > thresh) {
-        v(j) = 0;
+    if (stddev(cors.col(i)) != 0) {
+      for (int j = i; j < cors.n_cols; ++j) {
+        if (abs(cors(i, j)) > thresh) {
+          v(j) = 0;
+        }
       }
+    }
+    else {
+      v(i) = 0;
     }
   }
   return v; //vars marked zero are ones to not include
@@ -209,11 +214,9 @@ int main() {
   mat X = randn(1000, 5);
   vec treat = randn(1000);
   vec y = randn(1000);
-  //bsme(y);
   clock_t a = clock();
   List L = correlations(1000, 5, X, y, treat, 100);
   clock_t b = clock();
-  cout << double(b - a)/CLOCKS_PER_SEC << endl;
   return 0;
 }
 
