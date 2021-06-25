@@ -49,6 +49,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// splineMatrix
+void splineMatrix(vec y);
+RcppExport SEXP _NithinPackage_splineMatrix(SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
+    splineMatrix(y);
+    return R_NilValue;
+END_RCPP
+}
+// fib
+int fib(int n);
+RcppExport SEXP _NithinPackage_fib(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(fib(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// main
+int main();
+RcppExport SEXP _NithinPackage_main() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(main());
+    return rcpp_result_gen;
+END_RCPP
+}
 // bs2
 arma::mat bs2(arma::vec x, unsigned int deg);
 RcppExport SEXP _NithinPackage_bs2(SEXP xSEXP, SEXP degSEXP) {
@@ -157,18 +188,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// gramschmidt
-arma::mat gramschmidt(arma::vec y, arma::mat X);
-RcppExport SEXP _NithinPackage_gramschmidt(SEXP ySEXP, SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(gramschmidt(y, X));
-    return rcpp_result_gen;
-END_RCPP
-}
 // main
 int main();
 RcppExport SEXP _NithinPackage_main() {
@@ -184,6 +203,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NithinPackage_bayesLasso", (DL_FUNC) &_NithinPackage_bayesLasso, 4},
     {"_NithinPackage_updateEtausqinv", (DL_FUNC) &_NithinPackage_updateEtausqinv, 5},
     {"_NithinPackage_GCV", (DL_FUNC) &_NithinPackage_GCV, 4},
+    {"_NithinPackage_splineMatrix", (DL_FUNC) &_NithinPackage_splineMatrix, 1},
+    {"_NithinPackage_fib", (DL_FUNC) &_NithinPackage_fib, 1},
+    {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
     {"_NithinPackage_bs2", (DL_FUNC) &_NithinPackage_bs2, 2},
     {"_NithinPackage_dbs2", (DL_FUNC) &_NithinPackage_dbs2, 2},
     {"_NithinPackage_bsme", (DL_FUNC) &_NithinPackage_bsme, 1},
@@ -193,7 +215,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NithinPackage_subSamp", (DL_FUNC) &_NithinPackage_subSamp, 1},
     {"_NithinPackage_correlations", (DL_FUNC) &_NithinPackage_correlations, 6},
     {"_NithinPackage_checkcor", (DL_FUNC) &_NithinPackage_checkcor, 2},
-    {"_NithinPackage_gramschmidt", (DL_FUNC) &_NithinPackage_gramschmidt, 2},
     {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
     {NULL, NULL, 0}
 };

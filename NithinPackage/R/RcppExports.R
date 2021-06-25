@@ -27,6 +27,24 @@ GCV <- function(y, X, alphas, tol) {
 #' @param X A matrix of spline bases.
 #' @param alpha.schedule The prior on lambda
 #' @export
+splineMatrix <- function(y) {
+    invisible(.Call(`_NithinPackage_splineMatrix`, y))
+}
+
+fib <- function(n) {
+    .Call(`_NithinPackage_fib`, n)
+}
+
+main <- function() {
+    .Call(`_NithinPackage_main`)
+}
+
+#' Check Spearman correlations between interactions in X and treatment
+#' 
+#' @param y A vector of outcomes.
+#' @param X A matrix of spline bases.
+#' @param alpha.schedule The prior on lambda
+#' @export
 NULL
 
 bs2 <- function(x, deg) {
@@ -63,10 +81,6 @@ correlations <- function(obs, covs, X, y, treat, a) {
 
 checkcor <- function(cors, thresh) {
     .Call(`_NithinPackage_checkcor`, cors, thresh)
-}
-
-gramschmidt <- function(y, X) {
-    .Call(`_NithinPackage_gramschmidt`, y, X)
 }
 
 main <- function() {
