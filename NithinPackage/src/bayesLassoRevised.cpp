@@ -12,7 +12,7 @@ using namespace std;
 //
 // [[Rcpp::depends(RcppArmadillo)]]
 
-// simple example of creating two matrices and
+// simple example of creating two arma::matrices and
 // returning the result of an operatioon on them
 //
 // via the exports attribute we tell Rcpp to make this function
@@ -22,22 +22,22 @@ using namespace std;
 
 //' Check Spearman correlations between interactions in X and treatment
 //' 
-//' @param y A vector of outcomes.
-//' @param X A matrix of spline bases.
+//' @param y A arma::vector of outcomes.
+//' @param X A arma::matrix of spline bases.
 //' @param alpha.schedule The prior on lambda
 //' @export
 
 //[[Rcpp::export]]
-List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just takes in one alpha
+List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1e-6, just takes in one alpha
   
   int n = X.n_rows;
   int p = X.n_cols;
-  vec Etausqinv = ones(p);
-  vec Ewtsqtausq = ones(p);
-  mat XpX = X.t()*X;
-  mat Xpy = X.t()*y;
-  mat XpXsolve = XpX;
-  vec fits = zeros(n);
+  arma::vec Etausqinv = ones(p);
+  arma::vec Ewtsqtausq = ones(p);
+  arma::mat XpX = X.t()*X;
+  arma::mat Xpy = X.t()*y;
+  arma::mat XpXsolve = XpX;
+  arma::vec fits = zeros(n);
   double lambda_0 = 1;
   
   double sdy = stddev(y);
@@ -47,8 +47,8 @@ List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just ta
   double edf = 0;
   double GCV = 0;
   
-  vec beta = zeros(p);
-  vec beta_last = beta;
+  arma::vec beta = zeros(p);
+  arma::vec beta_last = beta;
   
   int iters = 500; //I like to put constants like this as their own variables, so we can change the value later easily
   
@@ -59,9 +59,9 @@ List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just ta
         XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6;    
       }
       beta_last = beta;
-      // Only select submatrix after the first iteration
+      // Only select subarma::matrix after the first iteration
       
-      uvec update_ind;
+      arma::uvec update_ind;
       
       if(i == 0) {
         update_ind = find(abs(beta) > -1);  
@@ -85,7 +85,7 @@ List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just ta
       
       conv = max(abs(beta - beta_last));
     }
-    uvec update_ind = find(abs(beta) > tol*sdy );
+    arma::uvec update_ind = find(abs(beta) > tol*sdy );
     edf = trace(XpX.submat(update_ind,update_ind)*pinv(XpXsolve.submat(update_ind,update_ind)));
     double den = (n-log(n)/2*edf);
     GCV = sum((y-fits)%(y-fits))/(den*den);
@@ -102,16 +102,16 @@ List bayesLasso(vec y, mat X, double alpha, double tol) { //tol is 1e-6, just ta
 
 //[[Rcpp::export]]
 
-vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) { 
+arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etausqinv, double tol) { 
   assert(alpha >= 1);
   Etausqinv(0) = 0; //zero out the GCV from previous
   int n = X.n_rows;
   int p = X.n_cols;
-  vec Ewtsqtausq = ones(p);
-  mat XpX = X.t()*X;
-  mat Xpy = X.t()*y;
-  mat XpXsolve = XpX;
-  vec fits = zeros(n);
+  arma::vec Ewtsqtausq = ones(p);
+  arma::mat XpX = X.t()*X;
+  arma::mat Xpy = X.t()*y;
+  arma::mat XpXsolve = XpX;
+  arma::vec fits = zeros(n);
   double lambda_0 = 1;
   
   double sdy = stddev(y);
@@ -121,8 +121,8 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) {
   double edf = 0;
   double GCV = 0;
   
-  vec beta = zeros(p);
-  vec beta_last = beta;
+  arma::vec beta = zeros(p);
+  arma::vec beta_last = beta;
   
   int iters = 500; //I like to put constants like this as their own variables, so we can change the value later easily
   for (int i = 0; i < iters; ++i) {
@@ -132,9 +132,9 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) {
         XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6;    
       }
       beta_last = beta;
-      // Only select submatrix after the first iteration
+      // Only select subarma::matrix after the first iteration
       
-      uvec update_ind;
+      arma::uvec update_ind;
       
       if(i == 0) {
         update_ind = find(abs(beta) > -1);  
@@ -158,7 +158,7 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) {
       
       conv = max(abs(beta - beta_last));
     }
-    uvec update_ind = find(abs(beta) > tol*sdy );
+    arma::uvec update_ind = find(abs(beta) > tol*sdy );
     edf = trace(XpX.submat(update_ind,update_ind)*pinv(XpXsolve.submat(update_ind,update_ind)));
     double den = (n-log(n)/2*edf);
     GCV = sum((y-fits)%(y-fits))/(den*den);
@@ -168,10 +168,10 @@ vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol) {
 }
 
 //[[Rcpp::export]]
-vec GCV(vec y, mat X, vec alphas, double tol) {
-  vec Etausqinv(X.n_cols + 1);
+arma::vec GCV(arma::vec y, arma::mat X, arma::vec alphas, double tol) {
+  arma::vec Etausqinv(X.n_cols + 1);
   Etausqinv.fill(alphas(0)*stddev(y));
-  vec GCVs = alphas;
+  arma::vec GCVs = alphas;
   int p = alphas.n_rows;
   for (int i = 0; i < p; ++i) {
     Etausqinv = updateEtausqinv(y, X, alphas(i), Etausqinv, tol);
@@ -181,19 +181,15 @@ vec GCV(vec y, mat X, vec alphas, double tol) {
   return GCVs;
 }
 
-//[[Rcpp::export]]
+/*//[[Rcpp::export]]
 int main() {
-  vec y{3, 1, 4, 1};
-  mat X{{2, 7, 1},{8, 2, 8}, {1, 8, 2}, {8, 4, 5}};
+  arma::vec y{3, 1, 4, 1};
+  arma::mat X{{2, 7, 1},{8, 2, 8}, {1, 8, 2}, {8, 4, 5}};
   
-  vec alphas{1.1,1.2,1.3,10.1,10.2,10.3,100.1,100.2,100.3};
+  arma::vec alphas{1.1,1.2,1.3,10.1,10.2,10.3,100.1,100.2,100.3};
   double tol = 1e-6;
-  vec GCVs = GCV(y, X, alphas, tol);
+  arma::vec GCVs = GCV(y, X, alphas, tol);
   GCVs.print();
   
   return 0;
-}
-
-/*** R
-main()
-*/
+}*/

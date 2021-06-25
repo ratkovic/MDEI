@@ -9,5 +9,5 @@ Description: More about what it does (maybe more than one
       line)
 License: What license is it under?
 Imports: Rcpp (>= 1.0.6)
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, splines2
 RoxygenNote: 7.1.1

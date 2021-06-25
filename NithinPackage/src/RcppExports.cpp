@@ -7,13 +7,13 @@
 using namespace Rcpp;
 
 // bayesLasso
-List bayesLasso(vec y, mat X, double alpha, double tol);
+List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol);
 RcppExport SEXP _NithinPackage_bayesLasso(SEXP ySEXP, SEXP XSEXP, SEXP alphaSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(bayesLasso(y, X, alpha, tol));
@@ -21,191 +21,150 @@ BEGIN_RCPP
 END_RCPP
 }
 // updateEtausqinv
-vec updateEtausqinv(vec y, mat X, double alpha, vec Etausqinv, double tol);
+arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etausqinv, double tol);
 RcppExport SEXP _NithinPackage_updateEtausqinv(SEXP ySEXP, SEXP XSEXP, SEXP alphaSEXP, SEXP EtausqinvSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< vec >::type Etausqinv(EtausqinvSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Etausqinv(EtausqinvSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(updateEtausqinv(y, X, alpha, Etausqinv, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // GCV
-vec GCV(vec y, mat X, vec alphas, double tol);
+arma::vec GCV(arma::vec y, arma::mat X, arma::vec alphas, double tol);
 RcppExport SEXP _NithinPackage_GCV(SEXP ySEXP, SEXP XSEXP, SEXP alphasSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< vec >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alphas(alphasSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(GCV(y, X, alphas, tol));
     return rcpp_result_gen;
 END_RCPP
 }
-// main
-int main();
-RcppExport SEXP _NithinPackage_main() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(main());
-    return rcpp_result_gen;
-END_RCPP
-}
-// splineMatrix
-void splineMatrix(vec y);
-RcppExport SEXP _NithinPackage_splineMatrix(SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
-    splineMatrix(y);
-    return R_NilValue;
-END_RCPP
-}
-// fib
-int fib(int n);
-RcppExport SEXP _NithinPackage_fib(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(fib(n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// main
-int main();
-RcppExport SEXP _NithinPackage_main() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(main());
-    return rcpp_result_gen;
-END_RCPP
-}
 // bs2
-mat bs2(vec x, unsigned int deg);
+arma::mat bs2(arma::vec x, unsigned int deg);
 RcppExport SEXP _NithinPackage_bs2(SEXP xSEXP, SEXP degSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type deg(degSEXP);
     rcpp_result_gen = Rcpp::wrap(bs2(x, deg));
     return rcpp_result_gen;
 END_RCPP
 }
 // dbs2
-mat dbs2(vec x, unsigned int deg);
+arma::mat dbs2(arma::vec x, unsigned int deg);
 RcppExport SEXP _NithinPackage_dbs2(SEXP xSEXP, SEXP degSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type deg(degSEXP);
     rcpp_result_gen = Rcpp::wrap(dbs2(x, deg));
     return rcpp_result_gen;
 END_RCPP
 }
 // bsme
-mat bsme(vec x);
+arma::mat bsme(arma::vec x);
 RcppExport SEXP _NithinPackage_bsme(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(bsme(x));
     return rcpp_result_gen;
 END_RCPP
 }
 // dbsme
-mat dbsme(vec x);
+arma::mat dbsme(arma::vec x);
 RcppExport SEXP _NithinPackage_dbsme(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(dbsme(x));
     return rcpp_result_gen;
 END_RCPP
 }
 // makebs
-mat makebs(mat X);
+arma::mat makebs(arma::mat X);
 RcppExport SEXP _NithinPackage_makebs(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     rcpp_result_gen = Rcpp::wrap(makebs(X));
     return rcpp_result_gen;
 END_RCPP
 }
 // splineBases
-mat splineBases(mat X, int covs);
+arma::mat splineBases(arma::mat X, int covs);
 RcppExport SEXP _NithinPackage_splineBases(SEXP XSEXP, SEXP covsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     Rcpp::traits::input_parameter< int >::type covs(covsSEXP);
     rcpp_result_gen = Rcpp::wrap(splineBases(X, covs));
     return rcpp_result_gen;
 END_RCPP
 }
 // subSamp
-vec subSamp(vec v);
+arma::vec subSamp(arma::vec v);
 RcppExport SEXP _NithinPackage_subSamp(SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type v(vSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type v(vSEXP);
     rcpp_result_gen = Rcpp::wrap(subSamp(v));
     return rcpp_result_gen;
 END_RCPP
 }
 // correlations
-List correlations(int obs, int covs, mat X, vec y, vec treat, long long unsigned int a);
+List correlations(int obs, int covs, arma::mat X, arma::vec y, arma::vec treat, long long unsigned int a);
 RcppExport SEXP _NithinPackage_correlations(SEXP obsSEXP, SEXP covsSEXP, SEXP XSEXP, SEXP ySEXP, SEXP treatSEXP, SEXP aSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< int >::type covs(covsSEXP);
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< vec >::type treat(treatSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type treat(treatSEXP);
     Rcpp::traits::input_parameter< long long unsigned int >::type a(aSEXP);
     rcpp_result_gen = Rcpp::wrap(correlations(obs, covs, X, y, treat, a));
     return rcpp_result_gen;
 END_RCPP
 }
 // checkcor
-vec checkcor(mat cors, double thresh);
+arma::vec checkcor(arma::mat cors, double thresh);
 RcppExport SEXP _NithinPackage_checkcor(SEXP corsSEXP, SEXP threshSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< mat >::type cors(corsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type cors(corsSEXP);
     Rcpp::traits::input_parameter< double >::type thresh(threshSEXP);
     rcpp_result_gen = Rcpp::wrap(checkcor(cors, thresh));
     return rcpp_result_gen;
 END_RCPP
 }
 // gramschmidt
-mat gramschmidt(vec y, mat X);
+arma::mat gramschmidt(arma::vec y, arma::mat X);
 RcppExport SEXP _NithinPackage_gramschmidt(SEXP ySEXP, SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     rcpp_result_gen = Rcpp::wrap(gramschmidt(y, X));
     return rcpp_result_gen;
 END_RCPP
@@ -225,10 +184,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NithinPackage_bayesLasso", (DL_FUNC) &_NithinPackage_bayesLasso, 4},
     {"_NithinPackage_updateEtausqinv", (DL_FUNC) &_NithinPackage_updateEtausqinv, 5},
     {"_NithinPackage_GCV", (DL_FUNC) &_NithinPackage_GCV, 4},
-    {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
-    {"_NithinPackage_splineMatrix", (DL_FUNC) &_NithinPackage_splineMatrix, 1},
-    {"_NithinPackage_fib", (DL_FUNC) &_NithinPackage_fib, 1},
-    {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
     {"_NithinPackage_bs2", (DL_FUNC) &_NithinPackage_bs2, 2},
     {"_NithinPackage_dbs2", (DL_FUNC) &_NithinPackage_dbs2, 2},
     {"_NithinPackage_bsme", (DL_FUNC) &_NithinPackage_bsme, 1},
