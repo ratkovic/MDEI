@@ -6,38 +6,6 @@
 
 using namespace Rcpp;
 
-// OLS
-void OLS(mat X, mat Y);
-RcppExport SEXP _NithinPackage_OLS(SEXP XSEXP, SEXP YSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< mat >::type Y(YSEXP);
-    OLS(X, Y);
-    return R_NilValue;
-END_RCPP
-}
-// fib
-int fib(int x);
-RcppExport SEXP _NithinPackage_fib(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(fib(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// main
-int main();
-RcppExport SEXP _NithinPackage_main() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(main());
-    return rcpp_result_gen;
-END_RCPP
-}
 // bayesLasso
 List bayesLasso(vec y, mat X, double alpha, double tol);
 RcppExport SEXP _NithinPackage_bayesLasso(SEXP ySEXP, SEXP XSEXP, SEXP alphaSEXP, SEXP tolSEXP) {
@@ -88,49 +56,6 @@ BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     rcpp_result_gen = Rcpp::wrap(main());
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_hello_world
-arma::mat rcpparma_hello_world();
-RcppExport SEXP _NithinPackage_rcpparma_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpparma_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_outerproduct
-arma::mat rcpparma_outerproduct(const arma::colvec& x);
-RcppExport SEXP _NithinPackage_rcpparma_outerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_outerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_innerproduct
-double rcpparma_innerproduct(const arma::colvec& x);
-RcppExport SEXP _NithinPackage_rcpparma_innerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_innerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_bothproducts
-Rcpp::List rcpparma_bothproducts(const arma::colvec& x);
-RcppExport SEXP _NithinPackage_rcpparma_bothproducts(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_bothproducts(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -297,17 +222,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_NithinPackage_OLS", (DL_FUNC) &_NithinPackage_OLS, 2},
-    {"_NithinPackage_fib", (DL_FUNC) &_NithinPackage_fib, 1},
-    {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
     {"_NithinPackage_bayesLasso", (DL_FUNC) &_NithinPackage_bayesLasso, 4},
     {"_NithinPackage_updateEtausqinv", (DL_FUNC) &_NithinPackage_updateEtausqinv, 5},
     {"_NithinPackage_GCV", (DL_FUNC) &_NithinPackage_GCV, 4},
     {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
-    {"_NithinPackage_rcpparma_hello_world", (DL_FUNC) &_NithinPackage_rcpparma_hello_world, 0},
-    {"_NithinPackage_rcpparma_outerproduct", (DL_FUNC) &_NithinPackage_rcpparma_outerproduct, 1},
-    {"_NithinPackage_rcpparma_innerproduct", (DL_FUNC) &_NithinPackage_rcpparma_innerproduct, 1},
-    {"_NithinPackage_rcpparma_bothproducts", (DL_FUNC) &_NithinPackage_rcpparma_bothproducts, 1},
     {"_NithinPackage_splineMatrix", (DL_FUNC) &_NithinPackage_splineMatrix, 1},
     {"_NithinPackage_fib", (DL_FUNC) &_NithinPackage_fib, 1},
     {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
