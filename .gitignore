@@ -41,3 +41,7 @@ vignettes/*.pdf
 NithinPackage/.DS_Store
 NithinPackage/.DS_Store
 NithinPackage/.DS_Store
+NithinPackage/src/bayesLassoRevised.o
+NithinPackage/src/NithinPackage.so
+NithinPackage/src/RcppExports.o
+NithinPackage/src/splinesinter.o
