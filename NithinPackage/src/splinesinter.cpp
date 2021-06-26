@@ -61,13 +61,13 @@ arma::mat dbs2(arma::vec x, unsigned int deg) {
 //[[Rcpp::export]]
 arma::mat bsme(arma::vec x) {
   
-  arma::mat m = join_rows(x, bs2(x, 4), bs2(x, 5), bs2(x, 6));
+  arma::mat m = arma::join_rows(x, bs2(x, 4), bs2(x, 5), bs2(x, 6));
   return m;
 }
 //[[Rcpp::export]]
 arma::mat dbsme(arma::vec x) {
   arma::vec v = ones(x.size());
-  arma::mat m = join_rows(v, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
+  arma::mat m = arma::join_rows(v, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
   return m;
 }
 //[[Rcpp::export]]
