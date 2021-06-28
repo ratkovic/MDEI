@@ -112,7 +112,8 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List correlations(int obs, int covs, arma::mat X, arma::vec y, arma::vec treat, long long unsigned int a) {//a is number of top results, i.e. top 100 or top 300
+List correlations(int obs, int covs, arma::mat X, string Xname, arma::vec y, arma::vec treat, string treatName, long long unsigned int a) {
+  //a is number of top results, i.e. top 100 or top 300
   
   arma::vec v = ones(obs);
   for (int i = 0; i < obs; ++i) {
@@ -165,16 +166,23 @@ List correlations(int obs, int covs, arma::mat X, arma::vec y, arma::vec treat, 
   }
   
   arma::mat M;
-
-  for (unsigned int i = 0; i < L.size(); ++i) {
-    arma::vec indexCurr = L[i];
-    arma::vec interTemp = treatSubsamp.col(indexCurr(0)) % XSubsamp.col(indexCurr(1)) % XSubsamp.col(indexCurr(2));
+  vector<string> names;
+  
+  for (unsigned int l = 0; l < L.size(); ++l) {
+    arma::vec indexCurr = L[l];
+    int i = indexCurr(0);
+    int j = indexCurr(1);
+    int k = indexCurr(2);
+    arma::vec interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
+    string name = treatName + to_string(i) + Xname + "var" + to_string(j) + Xname + to_string(k);
+    names.push_back(name);
     M = join_rows(M, interTemp);
   }
   
   L.push_back(M);
+  L.push_back(names);
   
-  return L; //returns a highest correlations
+  return L; //returns a highest correlations, matrix M, variable names
 } 
 
 //[[Rcpp::export]]
@@ -215,8 +223,9 @@ int main() {
   arma::vec treat = randn(1000);
   arma::vec y = randn(1000);
   clock_t a = clock();
-  List L = correlations(1000, 5, X, y, treat, 100);
+  List L = correlations(1000, 5, X, "Xname", y, treat, "treatname", 100);
   clock_t b = clock();
+  cout << double(b - a)/CLOCKS_PER_SEC << endl;
   return 0;
 }
 
