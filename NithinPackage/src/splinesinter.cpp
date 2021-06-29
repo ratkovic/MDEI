@@ -94,6 +94,7 @@ arma::mat splineBases(arma::mat X, int covs) {
   for (int i = 0; i < covs; ++i) {
     Xbs = join_rows(Xbs, makebs(X));
   }
+  //Xbs.print();
   return Xbs;
 }
 
@@ -112,15 +113,21 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List correlations(int obs, int covs, arma::mat X, string Xname, arma::vec y, arma::vec treat, string treatName, long long unsigned int a) {
+List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::vec y, arma::vec treat, string treatName, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
-  
   arma::vec v = ones(obs);
   for (int i = 0; i < obs; ++i) {
     v(i) = i;
   }
   
+  unsigned int cols = makebs(X).n_cols;
+  //cout << X.n_cols << endl;
+  
   arma::mat Xbs = splineBases(X, covs);
+  
+  //cout << cols << endl;
+  
+  //cout << Xbs.n_cols << endl;
   
   arma::mat treatbs = bsme(treat);
   arma::vec sample = subSamp(v);
@@ -174,7 +181,15 @@ List correlations(int obs, int covs, arma::mat X, string Xname, arma::vec y, arm
     int j = indexCurr(1);
     int k = indexCurr(2);
     arma::vec interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
-    string name = treatName + to_string(i) + Xname + "var" + to_string(j) + Xname + to_string(k);
+    
+    int r_j = j % cols;
+    int r_k = k % cols;
+    
+    int q_j = (j - r_j)/cols;
+    int q_k = (k - r_k)/cols;
+    
+    string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(j % cols) + "_x_" + Xname[q_k] + "_bs" + to_string(k % cols);
+    cout << name << endl;
     names.push_back(name);
     M = join_rows(M, interTemp);
   }
@@ -220,10 +235,11 @@ arma::mat gramschmidt(arma::vec y, arma::mat X) { //not finished yet. Right now 
 int main() {
   
   arma::mat X = randn(1000, 5);
+  //splineBases(X, 4);
   arma::vec treat = randn(1000);
   arma::vec y = randn(1000);
   clock_t a = clock();
-  List L = correlations(1000, 5, X, "Xname", y, treat, "treatname", 100);
+  List L = correlations(1000, 5, X, {"x1", "x2", "x3", "x4", "x5"}, y, treat, "treatname", 100);
   clock_t b = clock();
   cout << double(b - a)/CLOCKS_PER_SEC << endl;
   return 0;
