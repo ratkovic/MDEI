@@ -91,8 +91,9 @@ arma::mat makebs(arma::mat X) {
 //[[Rcpp::export]]
 arma::mat splineBases(arma::mat X, int covs) {
   arma::mat Xbs;
+  arma::mat M = makebs(X);
   for (int i = 0; i < covs; ++i) {
-    Xbs = join_rows(Xbs, makebs(X));
+    Xbs = join_rows(Xbs, M);
   }
   //Xbs.print();
   return Xbs;
@@ -119,16 +120,10 @@ List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::ve
   for (int i = 0; i < obs; ++i) {
     v(i) = i;
   }
-  
-  unsigned int cols = makebs(X).n_cols;
-  //cout << X.n_cols << endl;
-  
+
   arma::mat Xbs = splineBases(X, covs);
-  
-  //cout << cols << endl;
-  
-  //cout << Xbs.n_cols << endl;
-  
+  unsigned int cols = Xbs.n_cols/covs;
+
   arma::mat treatbs = bsme(treat);
   arma::vec sample = subSamp(v);
   
@@ -145,8 +140,8 @@ List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::ve
   }
   
   priority_queue<vec, vector<vec>, Comp> pq;
-  double sdy = stddev(ySubsamp);
-
+  cout << Xbs.n_cols << endl;
+  clock_t c = clock();
   for (double i = 0; i < treatbs.n_cols; ++i) {
     for (double j = 0; j < Xbs.n_cols; ++j) {
       for (double k = j; k < Xbs.n_cols; ++k) {
@@ -154,7 +149,7 @@ List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::ve
         
         double cor_temp = 0;
         if (!inter_temp.is_zero()) {
-          double cor_temp = abs(as_scalar(cor(ySubsamp, inter_temp)));
+          cor_temp = abs(as_scalar(cor(ySubsamp, inter_temp)));
         }
         
         arma::vec indexCurr{i, j, k, cor_temp};
@@ -165,8 +160,9 @@ List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::ve
       }
     }
   }
-
+  
   List L;
+
   while (!pq.empty()) {
     L.push_back(pq.top());
     pq.pop();
@@ -181,7 +177,6 @@ List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::ve
     int j = indexCurr(1);
     int k = indexCurr(2);
     arma::vec interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
-    
     int r_j = j % cols;
     int r_k = k % cols;
     
@@ -189,7 +184,6 @@ List correlations(int obs, int covs, arma::mat X, vector<string> Xname, arma::ve
     int q_k = (k - r_k)/cols;
     
     string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(j % cols) + "_x_" + Xname[q_k] + "_bs" + to_string(k % cols);
-    cout << name << endl;
     names.push_back(name);
     M = join_rows(M, interTemp);
   }
@@ -217,34 +211,17 @@ arma::vec checkcor(arma::mat cors, double thresh) {
   }
   return v; //vars marked zero are ones to not include
 }
- 
+
 /*//[[Rcpp::export]]
 arma::mat gramschmidt(arma::vec y, arma::mat X) { //not finished yet. Right now it just finds the column with the max correlation
-  double m = 0;
-  double index = -1;
-  for (unsigned int i = 0; i < X.n_cols; ++i) {
-    arma::vec col = X.col(i);
-    if (as_scalar(cor(col, y)) > m) {
-      index = i;
-      m = as_scalar(cor(col, y));
-    }
-  }
+ double m = 0;
+ double index = -1;
+ for (unsigned int i = 0; i < X.n_cols; ++i) {
+ arma::vec col = X.col(i);
+ if (as_scalar(cor(col, y)) > m) {
+    index = i;
+    m = as_scalar(cor(col, y));
+ }
+ }
 }*/
 
-//[[Rcpp::export]]
-int main() {
-  
-  arma::mat X = randn(1000, 5);
-  //splineBases(X, 4);
-  arma::vec treat = randn(1000);
-  arma::vec y = randn(1000);
-  clock_t a = clock();
-  List L = correlations(1000, 5, X, {"x1", "x2", "x3", "x4", "x5"}, y, treat, "treatname", 100);
-  clock_t b = clock();
-  cout << double(b - a)/CLOCKS_PER_SEC << endl;
-  return 0;
-}
-
-/*** R
-main()
-*/
