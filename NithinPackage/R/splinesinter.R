@@ -5,15 +5,16 @@ source('C:\\Users\\think\\OneDrive\\Documents\\NithinPackage\\R\\sparseregTE_spl
 ## Will need splines2, randomForest, coop, RcppEigen, Rfast
 
 ### Set up data
-n<-200 #n obs
-p<-3 #n covs
+n<-1000 #n obs
+p<-5 #n covs
 
 ## Treatment variable
 ## This is the one for which we want to estimate the first derivative.
+
 treat<-rnorm(n)
 
 ## Covariates
-X<-matrix(rnorm(n*p))
+X<-matrix(rnorm(n*p),n,p)
 
 ## Outcome
 ## Note that there is no function of only the 
@@ -39,9 +40,10 @@ plot(treat,treat.dbs[,4],main="derivative")
 
 
 ## Make matrix of spline bases
+
 X.bs <- NULL
 for(i in 1:p){
-  X.bs <- cbind(X.bs,make.bs(X))
+  X.bs <- cbind(X.bs,make.bs(X[,i]))
 }
 
 ## Find the most correlated interactions.
@@ -54,7 +56,7 @@ subsamp <- sample(1:n, n/2, FALSE)
 
 for(i.t in 1:ncol(treat.bs)){
   for(i.1 in 1:ncol(X.bs)){
-    for(i.2 in 1:ncol(X.bs)){
+    for(i.2 in i.1:ncol(X.bs)){
       index.curr<-c(i.t,i.1,i.2)
       inter.temp <- treat.bs[subsamp,i.t]*X.bs[subsamp,i.1]*X.bs[subsamp,i.2]
       cor.temp <- cor(y[subsamp],inter.temp)

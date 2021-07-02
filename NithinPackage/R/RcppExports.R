@@ -57,8 +57,8 @@ subSamp <- function(v) {
     .Call(`_NithinPackage_subSamp`, v)
 }
 
-correlations <- function(obs, covs, X, y, treat, a) {
-    .Call(`_NithinPackage_correlations`, obs, covs, X, y, treat, a)
+splineBasesAndCorrs <- function(obs, covs, X, Xname, y, treat, treatName, a) {
+    .Call(`_NithinPackage_splineBasesAndCorrs`, obs, covs, X, Xname, y, treat, treatName, a)
 }
 
 checkcor <- function(cors, thresh) {

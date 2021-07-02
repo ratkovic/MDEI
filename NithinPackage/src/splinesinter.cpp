@@ -29,70 +29,69 @@ using namespace splines2;
 
 //[[Rcpp::export]]
 arma::mat bs2(arma::vec x, unsigned int deg) {
-  BSpline b1{x, deg};
-  BSpline b2{-x, deg};
+  BSpline b1{x, deg + 1};
+  BSpline b2{-x, deg + 1};
   
   arma::mat b = b1.basis();
   arma::mat c = b2.basis();
-  arma::vec l = zeros(b.n_rows);
+  arma::vec l = arma::zeros(b.n_rows);
   int row_size = c.n_cols;
   for (unsigned int i = 0; i < b.n_rows; ++i) {
     l(i) = c(i, row_size - 1);
   }
   
-  arma::mat d = join_rows(l, b);
-  return d;
+  arma::mat d = arma::join_rows(l, b);
+  return b;
 }
 //[[Rcpp::export]]
 arma::mat dbs2(arma::vec x, unsigned int deg) {
-  BSpline b1{x, deg};
-  BSpline b2{-x, deg};
+  BSpline b1{x, deg + 1};
+  BSpline b2{-x, deg + 1};
   arma::mat db1 = b1.derivative();
   arma::mat db2 = b2.derivative();
-  arma::vec l = zeros(db1.n_rows);
+  arma::vec l = arma::zeros(db1.n_rows);
   int row_size = db2.n_cols;
   for (unsigned int i = 0; i < db1.n_rows; ++i) {
-    l(i) = db2(i, row_size - 1);
+    l(i) = -db2(i, row_size - 1);
   }
   
-  arma::mat d = join_rows(l, db1);
-  return d;
+  arma::mat d = arma::join_rows(l, db1);
+  return db1;
 }
 //[[Rcpp::export]]
 arma::mat bsme(arma::vec x) {
   
-  arma::mat m = arma::join_rows(x, bs2(x, 4), bs2(x, 5), bs2(x, 6));
-  return m;
+  arma::mat m = arma::join_rows(x, bs2(x, 3), bs2(x, 4), bs2(x, 5));
+  return arma::join_rows(m, bs2(x, 6));
 }
 //[[Rcpp::export]]
 arma::mat dbsme(arma::vec x) {
-  arma::vec v = ones(x.size());
-  arma::mat m = arma::join_rows(v, dbs2(x, 4), dbs2(x, 5), dbs2(x, 6));
-  return m;
+  arma::vec v = arma::ones(x.n_rows);
+  arma::mat m = arma::join_rows(v, dbs2(x, 4), dbs2(x, 4), dbs2(x, 5));
+  return arma::join_rows(m, dbs2(x, 6));
 }
 //[[Rcpp::export]]
 arma::mat makebs(arma::vec X) {
 
   arma::vec x = (X - mean(X))/stddev(X);
-  arma::vec v = ones(x.n_rows);
-  map<int, int> m;
-  for (unsigned int i = 0; i < x.size(); ++i) {
+  arma::vec v = arma::ones(x.n_rows);
+  map<double, int> m;
+  for (unsigned int i = 0; i < x.n_rows; ++i) {
     m[x(i)]++;
   }
   if (m.size() <= 3) {
-    return join_rows(v, x);
+    return arma::join_rows(v, x);
   }
-  return join_rows(v, bsme(x));
+  return arma::join_rows(v, bsme(x));
 }
 //[[Rcpp::export]]
 List splineBases(arma::mat X, int covs) {
   arma::mat Xbs;
   std::vector<int> v;
   v.push_back(0);
-  //arma::vec v = zeros(X.n_cols);
   for (int i = 0; i < covs; ++i) {
     arma::mat m = makebs(X.col(i));
-    Xbs = join_rows(Xbs, m);
+    Xbs = arma::join_rows(Xbs, m);
     v.push_back(m.n_cols + v[i]);
 
   }
@@ -105,18 +104,16 @@ arma::vec subSamp(arma::vec v) {
 }
 
 struct Comp { //this is a comparator, used for the heap (priority_queue) in the function below
-  
   public:
     bool operator()(arma::vec a, arma::vec b) {
       return a(3) > b(3);
     }
-  
 };
 
 //[[Rcpp::export]]
-List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a) {
+List splineBasesAndCorrs(int obs, int covs, arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
-  arma::vec v = ones(obs);
+  arma::vec v = arma::ones(obs);
   for (int i = 0; i < obs; ++i) {
     v(i) = i;
   }
@@ -124,16 +121,13 @@ List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname
   List sB = splineBases(X, covs);
   arma::mat Xbs = sB["Xbs"];
   std::vector<int> colSizes = sB["vec"];
-  for (int i = 0; i < colSizes.size(); ++i) {
-    cout << colSizes[i] << " ";
-  }
 
   arma::mat treatbs = bsme(treat);
   arma::vec sample = subSamp(v);
   
-  arma::mat treatSubsamp = zeros(obs/2, treatbs.n_cols);
-  arma::mat XSubsamp = zeros(obs/2, Xbs.n_cols);
-  arma::vec ySubsamp = zeros(obs/2);
+  arma::mat treatSubsamp = arma::zeros(obs/2, treatbs.n_cols);
+  arma::mat XSubsamp = arma::zeros(obs/2, Xbs.n_cols);
+  arma::vec ySubsamp = arma::zeros(obs/2);
   
   for (int i = 0; i < obs/2; ++i) { //this just gets the certain rows/entries corresponding to the random sample
     for (unsigned int j = 0; j < treatbs.n_cols; ++j) {
@@ -143,19 +137,23 @@ List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname
     }  
   }
 
-  priority_queue<vec, std::vector<vec>, Comp> pq;
-  cout << treatbs.n_cols << endl;
-  cout << Xbs.n_cols << endl;
+  priority_queue<arma::vec, std::vector<arma::vec>, Comp> pq;
+  arma::vec indexCurr=arma::zeros(4);
+  arma::vec inter_temp = arma::zeros(treatbs.n_rows);
+
   for (double i = 0; i < treatbs.n_cols; ++i) {
     for (double j = 0; j < Xbs.n_cols; ++j) {
       for (double k = j; k < Xbs.n_cols; ++k) {
-        arma::vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
+        inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         double cor_temp = 0;
         if (!inter_temp.is_zero()) {
-          cor_temp = abs(as_scalar(cor(ySubsamp, inter_temp)));
+          cor_temp = abs(as_scalar(arma::cor(ySubsamp, inter_temp)));
         }
-        arma::vec indexCurr{i, j, k, cor_temp};
+        indexCurr(0) = i;
+        indexCurr(1) = j;
+        indexCurr(2) = k;
+        indexCurr(3) = cor_temp;
         pq.push(indexCurr);
         if (pq.size() > a) { //this keeps the size of the heap to exactly a
           pq.pop();
@@ -164,7 +162,7 @@ List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname
     }
   }
   
-  std::vector<vec> indexCurrs;
+  std::vector<arma::vec> indexCurrs;
 
   while (!pq.empty()) {
     indexCurrs.push_back(pq.top());
@@ -173,6 +171,7 @@ List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname
   
   arma::mat M;
   std::vector<std::string> names;
+  arma::vec interTemp = arma::zeros(treatbs.n_rows);
   
   for (unsigned int l = 0; l < indexCurrs.size(); ++l) {
     arma::vec indexCurr = indexCurrs[l];
@@ -180,7 +179,7 @@ List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname
     int j = indexCurr(1);
     int k = indexCurr(2);
 
-    arma::vec interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
+    interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
     
     int q_j = lower_bound(colSizes.begin(), colSizes.end(), j) - colSizes.begin();
     int r_j = 0;
@@ -198,7 +197,7 @@ List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname
     
     std::string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(r_j) + "_x_" + Xname[q_k] + "_bs" + to_string(r_k);
     names.push_back(name);
-    M = join_rows(M, interTemp);
+    M = arma::join_rows(M, interTemp);
   }
   
   return List::create(Named("cors") = indexCurrs, _["M"] = M, _["names"] = names); //returns a highest correlations, matrix M, variable names
@@ -239,42 +238,44 @@ arma::mat gramschmidt(arma::vec y, arma::mat X) { //not finished yet. Right now 
 int main() {
   
   //tests
-  /* a = randn(10);
-   arma::mat b = bs2(a, 4);
-   b.print();
+   /*arma::vec a{3,1,4,1,5,9,2,6}; 
+   arma::mat b = bs2(a, 3);
+   //b.print();
    cout << "\n" << endl;
-   arma::mat c = dbs2(a, 5);
-   c.print();
+   arma::mat c = dbs2(a, 3);
+   //c.print();
    
    cout << "\n" << endl;
    
    arma::mat d = bsme(a);
-   d.print();
+   //d.print();
    
    cout << "\n" << endl;
    
    arma::mat e = dbsme(a);
-   e.print();
+   //e.print();
    
    cout << "\n" << endl;
    
-   arma::mat f = randn(5,5);
-   arma::mat g = makebs(f);
+   arma::mat f = makebs(a);
    
-   g.print(); 
+   //f.print(); 
+   
+   arma::mat g{{1,2,3},{4,5,6},{7,8,9}};
    
    cout << "\n" << endl;
-   arma::mat h = splineBases(f, 5);
-   h.print(); */
+   List L = splineBases(g, 3);
+   arma::mat h = L["Xbs"];
+   h.print();*/
   
   arma::mat X = randn(1000, 5);
-  //splineBases(X, 3);
   arma::vec treat = randn(1000);
   arma::vec y = 3*randu(1000) + 7;
-  clock_t a = clock();
-  List L = correlations(1000, 5, X, {"education", "race", "ethnicity", "income", "other"}, y, treat, "treatname", 20); 
-  clock_t b = clock();
-  cout << double(b - a)/CLOCKS_PER_SEC << endl;
+  List L = splineBasesAndCorrs(1000, 5, X, {"education", "race", "ethnicity", "income", "other"}, y, treat, "treatname", 20); 
+  vector<vec> cors = L["cors"];
+  for (vec v : cors) {
+    cout << v(3) << endl;
+  }
   return 0;
 }
 

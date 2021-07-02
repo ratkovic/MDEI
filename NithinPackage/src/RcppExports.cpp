@@ -129,9 +129,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// correlations
-List correlations(int obs, int covs, arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a);
-RcppExport SEXP _NithinPackage_correlations(SEXP obsSEXP, SEXP covsSEXP, SEXP XSEXP, SEXP XnameSEXP, SEXP ySEXP, SEXP treatSEXP, SEXP treatNameSEXP, SEXP aSEXP) {
+// splineBasesAndCorrs
+List splineBasesAndCorrs(int obs, int covs, arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a);
+RcppExport SEXP _NithinPackage_splineBasesAndCorrs(SEXP obsSEXP, SEXP covsSEXP, SEXP XSEXP, SEXP XnameSEXP, SEXP ySEXP, SEXP treatSEXP, SEXP treatNameSEXP, SEXP aSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -143,7 +143,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type treat(treatSEXP);
     Rcpp::traits::input_parameter< std::string >::type treatName(treatNameSEXP);
     Rcpp::traits::input_parameter< long long unsigned int >::type a(aSEXP);
-    rcpp_result_gen = Rcpp::wrap(correlations(obs, covs, X, Xname, y, treat, treatName, a));
+    rcpp_result_gen = Rcpp::wrap(splineBasesAndCorrs(obs, covs, X, Xname, y, treat, treatName, a));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -181,7 +181,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NithinPackage_makebs", (DL_FUNC) &_NithinPackage_makebs, 1},
     {"_NithinPackage_splineBases", (DL_FUNC) &_NithinPackage_splineBases, 2},
     {"_NithinPackage_subSamp", (DL_FUNC) &_NithinPackage_subSamp, 1},
-    {"_NithinPackage_correlations", (DL_FUNC) &_NithinPackage_correlations, 8},
+    {"_NithinPackage_splineBasesAndCorrs", (DL_FUNC) &_NithinPackage_splineBasesAndCorrs, 8},
     {"_NithinPackage_checkcor", (DL_FUNC) &_NithinPackage_checkcor, 2},
     {"_NithinPackage_main", (DL_FUNC) &_NithinPackage_main, 0},
     {NULL, NULL, 0}
