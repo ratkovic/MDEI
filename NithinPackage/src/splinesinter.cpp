@@ -58,17 +58,56 @@ arma::mat dbs2(arma::vec x, unsigned int deg) {
   arma::mat d = arma::join_rows(l, db1);
   return db1;
 }
+
 //[[Rcpp::export]]
+arma::vec myrank(arma::vec x) {
+  arma::vec sorted = arma::sort(x);
+  arma::vec rank = arma::zeros(x.size());
+  unordered_map<int, int> umap;
+  unordered_map<int, int> counts;
+  
+  for (int i = 0; i < sorted.size(); ++i) {
+    umap[sorted[i]] += i + 1;
+    counts[sorted[i]]++;
+  }
+  
+  for (int i = 0; i < sorted.size(); ++i) {
+    rank(i) = double(umap[x(i)]/(counts[x(i)] + 0.0));
+  }
+  return rank;
+}
+
+//[[Rcpp::export]]
+
 arma::mat bsme(arma::vec x) {
   
-  arma::mat m = arma::join_rows(x, bs2(x, 3), bs2(x, 4), bs2(x, 5));
-  return arma::join_rows(m, bs2(x, 6));
+  x = myrank(x);
+  double med = x.size()/2.0;
+  x -= med;
+  arma::mat pos = BSpline{x, 4}.basis();
+  arma::mat neg = BSpline{-x, 4}.basis();
+  arma::mat m = arma::join_rows(x, pos, neg);
+  arma::vec cpos = pos.col(pos.n_cols - 3);
+  arma::vec cneg = neg.col(neg.n_cols - 3);
+  arma::mat n = arma::join_rows(m, cpos, cneg);
+  uvec indices = {1, 4};
+  n.shed_cols(indices);
+  return arma::join_rows(n, cneg, cpos);
 }
 //[[Rcpp::export]]
 arma::mat dbsme(arma::vec x) {
-  arma::vec v = arma::ones(x.n_rows);
-  arma::mat m = arma::join_rows(v, dbs2(x, 4), dbs2(x, 4), dbs2(x, 5));
-  return arma::join_rows(m, dbs2(x, 6));
+  x = myrank(x);
+  double med = x.size()/2.0;
+  x -= med;
+  arma::mat pos = BSpline{x, 4}.derivative();
+  arma::mat neg = BSpline{-x, 4}.derivative();
+  arma::mat m = arma::join_rows(x, pos, neg);
+  arma::vec cpos = pos.col(pos.n_cols - 3);
+  arma::vec cneg = neg.col(neg.n_cols - 3);
+  arma::mat n = arma::join_rows(m, cpos, cneg);
+  uvec indices = {1, 4};
+  n.shed_cols(indices);
+  return arma::join_rows(n, cneg, cpos);
 }
 //[[Rcpp::export]]
 arma::mat makebs(arma::vec X) {
@@ -111,8 +150,10 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List splineBasesAndCorrs(int obs, int covs, arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a) {
+List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
+  unsigned int obs = X.n_rows;
+  unsigned int covs = X.n_cols;
   arma::vec v = arma::ones(obs);
   for (int i = 0; i < obs; ++i) {
     v(i) = i;
@@ -238,7 +279,8 @@ arma::mat gramschmidt(arma::vec y, arma::mat X) { //not finished yet. Right now 
 int main() {
   
   //tests
-   /*arma::vec a{3,1,4,1,5,9,2,6}; 
+   /*arma::vec a{3,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3};
+
    arma::mat b = bs2(a, 3);
    //b.print();
    cout << "\n" << endl;
@@ -248,7 +290,7 @@ int main() {
    cout << "\n" << endl;
    
    arma::mat d = bsme(a);
-   //d.print();
+   d.print();
    
    cout << "\n" << endl;
    
@@ -268,14 +310,14 @@ int main() {
    arma::mat h = L["Xbs"];
    h.print();*/
   
-  arma::mat X = randn(1000, 5);
+  /*arma::mat X = randn(1000, 5);
   arma::vec treat = randn(1000);
   arma::vec y = 3*randu(1000) + 7;
   List L = splineBasesAndCorrs(1000, 5, X, {"education", "race", "ethnicity", "income", "other"}, y, treat, "treatname", 20); 
   vector<vec> cors = L["cors"];
   for (vec v : cors) {
     cout << v(3) << endl;
-  }
+  }*/
   return 0;
 }
 
