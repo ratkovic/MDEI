@@ -143,7 +143,7 @@ List splineBasesAndCorrs(int obs, int covs, arma::mat X, std::vector<std::string
 
   for (double i = 0; i < treatbs.n_cols; ++i) {
     for (double j = 0; j < Xbs.n_cols; ++j) {
-      for (double k = j; k < Xbs.n_cols; ++k) {
+      for (double k = j + 1; k < Xbs.n_cols; ++k) {
         inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         double cor_temp = 0;
