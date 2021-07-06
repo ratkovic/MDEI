@@ -19,7 +19,7 @@ bs.me <- function(x) {
 
 ##
 #if(FALSE){
-  x<- 1:50
+  x<- 1:500
   x<- x- median(x)
   basis.out <- bs.me(x)
   plot(x,basis.out[,2],type="l")
