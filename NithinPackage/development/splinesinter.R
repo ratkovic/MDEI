@@ -172,7 +172,7 @@ check.cor<-function(X,thresh=0,nruns=3){
   ## 2's: what we estimate off of
   ## (Then we swap them)
   
-  ## Add sparsereg screen off set 1 -- runs sparseregGCV and then returns bases maintained from set 1
+  ## Add sparsereg screen off set 1 -- runs bayesLassoGCV and then returns bases maintained from set 1
   
   
   ## Put into making bases
@@ -188,4 +188,11 @@ check.cor<-function(X,thresh=0,nruns=3){
 }
 
 
-}
+## So:
+  ## All of this splinebasesandcors
+  ## Calculate correlations for screen of replaceme==1.
+  ## Of top 200 bases (or a) standardize as: original bases subtract mean and divide
+  ## by sd, but for derivative bases, divide by sd of original bases
+  ## Run bayeslassoGCV to see which bases are kept only using replaceme==1 
+  ## Return bases and derivative bases that are kept
+
