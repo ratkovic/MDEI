@@ -164,4 +164,28 @@ check.cor<-function(X,thresh=0,nruns=3){
   keeps<-drops.run!=(-nruns)
   out1<-list("keeps"=keeps)
   return(out1)	
+  
+  ####  New things for 7/15
+  
+  ## Add replaceme -- vector of 1's and 2;s
+  ## 1's: used for correlation
+  ## 2's: what we estimate off of
+  ## (Then we swap them)
+  
+  ## Add sparsereg screen off set 1 -- runs sparseregGCV and then returns bases maintained from set 1
+  
+  
+  ## Put into making bases
+  
+  means<-colMeans(b1$baseste[replaceme==i.r,])
+  sds<-apply(b1$baseste[replaceme==i.r,],2,sd)
+  sds.run<-sds
+  for(i.scale in 1:ncol(baseste)){
+    baseste[replaceme==i.r,i.scale]<-(baseste[replaceme==i.r,i.scale]-means[i.scale])/sds[i.scale]
+    baseste.del[replaceme==i.r,i.scale]<-(baseste.del[replaceme==i.r,i.scale]-means[i.scale])/sds[i.scale]
+    ## Should we subtract means here?
+  }
+}
+
+
 }
