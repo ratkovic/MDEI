@@ -1,3 +1,4 @@
+### Required packages  -----
 library(splines2)
 library(randomForest)
 library(MASS)
@@ -45,13 +46,14 @@ if(!exists("arma_cor")){
        arma::mat tspline = treatbases.col(indices(0,0))%
                             xbases.col(indices(1,0))%
                              xbases.col(indices(2,0));
+
       arma::mat cor_temp = arma::cor(tspline,res);
       output(0) = cor_temp;
       ;
    };"
-  #arma_fastcor = cppFunction(code = arma_fastcor_code, depends = "RcppArmadillo")
+#arma_fastcor = cppFunction(code = arma_fastcor_code, depends = "RcppArmadillo")
   
-  
+ 
 }
 
 ### Main sparseregTE function ----
@@ -82,11 +84,11 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
     treat2<-lm(treat~X.lin)$res
   }
   
-  rf1<-randomForest(y2,x=X2)
+  rf1<-randomForest(y2,x=X2, ntree=20000)
   resy.full<-resy<-y2-predict(rf1)
   
   if(partial.out.treat){
-    rf1<-randomForest(treat2,x=X2)
+    rf1<-randomForest(treat2,x=X2, ntree=20000)
     rest.full<-rest<-treat-predict(rf1)
   } else{
     rest.full<-rest<-treat
@@ -135,7 +137,7 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
       treat2<-lm(treat~X.lin,weights=1*(replaceme==1))$res
     }
     
-    partialoutRF<-function(y,X=X2,replaceme0=replaceme,nt=2000){
+    partialoutRF<-function(y,X=X2,replaceme0=replaceme,nt=20000){
       rf1<-randomForest(y,x=X,subset=(replaceme0==1),ntrees=nt)
       y-predict(rf1,newdata=X)
     }
@@ -209,8 +211,8 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
     
     if(!splitsamp)  replaceme<-0*replaceme+1
     boot.samp<-which(replaceme==1)
-    rf.errX<-rf.errTX<-randomForest((errs.te[boot.samp])^2,x=cbind(treat,X)[boot.samp,])
-    rf.errX<-randomForest((errs.te[boot.samp])^2,x=cbind(X)[boot.samp,])
+    rf.errX<-rf.errTX<-randomForest((errs.te[boot.samp])^2,x=cbind(treat,X)[boot.samp,], ntree=20000)
+    rf.errX<-randomForest((errs.te[boot.samp])^2,x=cbind(X)[boot.samp,], ntree=20000)
     TXpred<-data.frame(treat,X)
     Xpred<-data.frame(sample(treat),X)
     names(Xpred)<-names(TXpred)
@@ -229,7 +231,7 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
     Dtau.inv<-Dtau<-diag(taus.use)
     diag(Dtau.inv) <- 1/diag(Dtau)
     A <- arma_invert(XprimeX + Dtau.inv)
-    
+
     if(!splitsamp) replaceme<-replaceme*0+2
     
     hii<-colSums(t(ste.EM$X)*(A%*%t(ste.EM$X)))
@@ -243,7 +245,7 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
     se.run[replaceme==2,i.split]<-ses.curr
     te.run[replaceme==2,i.split]<-te.curr[replaceme==2]/sd.treat
     y.fits.run[replaceme==2,i.split]<-(y2+fits.curr)[replaceme==2]-errs.hii
-    #(y2-resy+fits.curr)[replaceme==2]
+      #(y2-resy+fits.curr)[replaceme==2]
     #resy.run[replaceme==2,i.split]<-(resy)[replaceme==2]
     resy.run[replaceme==2,i.split]<-errs.hii#(resy)[replaceme==2]
     
@@ -270,16 +272,16 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
   te.sd.out<-apply(te.run,1,sd,na.rm=T)
   ##find output
   alpha.cv<-CI
-  
-  
-  
+
+
+
   ## Invert the confidence interval ----
   ts.all<-abs(y.fits.run-y)/y.se.run
   cvalpha<-apply(ts.all,2,quantile,CI,na.rm=T)
   ts.all<-as.vector(ts.all)
   ts.all<-ts.all[!is.na(ts.all)]
   cvalpha<-quantile(ts.all,CI)
-  
+    
   cvalpha2<-(mean(cvalpha)+1)
   if(length(critical.value)>0) cvalpha2<-critical.value
   
@@ -318,13 +320,13 @@ sparseregTE <- function(y, treat, X, X.lin=NULL, id=NULL,weights = 1, splitsamp=
 #' @export
 check.cort<-function(x,tspline0=tspline,Xt0=Xte,resy0=resy,sample.mat){
   ts1<-tspline0[,x[1]]*Xt0[,x[2]]*Xt0[,x[3]]
-  cors.check<-apply(sample.mat,2,FUN=function(ind,a=resy0,b=ts1)
+    cors.check<-apply(sample.mat,2,FUN=function(ind,a=resy0,b=ts1)
     #pcor(a[ind],b[ind])
-    arma_cor(a[ind],b[ind])
-  )
-  if(sum(is.na(cors.check)) >0) return(0)
-  if(abs(mean(sign(cors.check)))<1) return(0)
-  abs(colMedians(as.matrix(cors.check)))[1]
+      arma_cor(a[ind],b[ind])
+    )
+    if(sum(is.na(cors.check)) >0) return(0)
+    if(abs(mean(sign(cors.check)))<1) return(0)
+    abs(colMedians(as.matrix(cors.check)))[1]
 }
 ##  Construct basis  ----
 
@@ -352,8 +354,8 @@ make.bs<-function(x,name1){
   if(length(unique(x))<=3 ){
     m2<-cbind(1,x)
   } else{
-    m2<-cbind(1,bs.me(x))
-    
+  m2<-cbind(1,bs.me(x))
+  
   }
   m2
 }
@@ -380,7 +382,7 @@ make.Xte<-function(X){
   colnames(Xte)[1]<-"(Intercept)"
   return(Xte)
   
-  
+ 
 }
 
 ##  Cleaning the covariate matrix ----
@@ -529,7 +531,7 @@ make.justbaseste<-function(rest,resy,X,inter.schedule,tspline,tspline.del,Xte,st
   nc<-ncol(tspline)-1
   colnames(tspline.del)<-colnames(tspline)<-c("treatlin",paste("treatspline",1:nc,"_"))
   #paste("treatbs3",1:3,sep= "_"),paste("treatbs5",1:5,sep= "_"))
-  
+
   baseste<-cbind(as.vector(rest),apply(inter.schedule,1,construct.cort,tspline0=tspline,Xt0=Xte))
   baseste.del<-cbind(1,apply(inter.schedule,1,construct.cort,tspline0=tspline.del,Xt0=Xte))
   colnames(baseste.del)<-colnames(baseste)<-c(
@@ -618,7 +620,7 @@ isis.te<-function(rest,X,resy,quants,lms,id=NULL){
   colnames(tspline.del)<-colnames(tspline)<-c("treatlin",paste("treatspline",1:nc,"_"))
   
   Xte<-make.Xte(X)
-  
+
   ## Create interaction schedule ----
   inter.schedule0<-make.inter.schedule(Xte,resy,rest,X,n,tspline)
   b1<-make.baseste(rest,resy,X,inter.schedule0,tspline,tspline.del,Xte)
@@ -656,11 +658,10 @@ isis.te<-function(rest,X,resy,quants,lms,id=NULL){
 
 
 ##  Bspline functions, adding a curve shooting up on both sides ----
-#' @export
-bSpline2<-function(x,df){
-  b1<-bSpline(x,df)
-  b2<-bSpline(-x,df)
-  return(cbind(b2[,ncol(b2)],b1))
+bSpline2<-function(x,...){
+  b1<-bSpline(x,...)
+  b2<-bSpline(-x,...)
+  cbind(b2[,ncol(b2)],b1)
 }
 
 dbs2<-function(x,...){
@@ -675,7 +676,7 @@ bs.me<-function(x){
   #sd.x<-sd(x)
   #x<-x/sd.x
   m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4),bSpline2(x,df=5),bSpline2(x,df=6))
-  return(m2)
+ return(m2)
   
 }
 
@@ -685,7 +686,7 @@ dbs.me<-function(x){
   sd.x<-1
   #sd.x<-sd(x)
   #x<-x/sd.x
-  m1<-cbind(1,dbs2(x,df=4),dbs2(x,df=5),dbs2(x,df=6))
+   m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4),dbs2(x,df=5),dbs2(x,df=6))
   return(m1/sd.x)
   
 }
@@ -707,3 +708,4 @@ check.cor<-function(X,thresh=0,nruns=3){
   out1<-list("keeps"=keeps)
   return(out1)	
 }
+
