@@ -77,7 +77,7 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
       for (int j= 1; j < p; ++j) {
         //fitting with gamma=2, things are tractable.
         a = (abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2))*lambda_0*lambda_0/2;
-        w = 1;//4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
+        w = 4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*(a+1)));
         Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)*w+pow(lambda_0,-2);
         Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*w;
       }
@@ -162,7 +162,7 @@ arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etau
       for (int j= 1; j < p; ++j) {
         //fitting with gamma=2, things are tractable.
         a = (abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2))*lambda_0*lambda_0/2;
-        w = 1;//4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
+        w = 4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*(a+1)));
         Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)*w+pow(lambda_0,-2);
         Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*w;
       }
