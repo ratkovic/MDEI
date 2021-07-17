@@ -77,9 +77,9 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
       for (int j= 1; j < p; ++j) {
         //fitting with gamma=2, things are tractable.
         a = (abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2))*lambda_0*lambda_0/2;
-        w = 4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
+        w = 1;//4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
         Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)*w+pow(lambda_0,-2);
-        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*a;
+        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*w;
       }
       Etausqinv(0) = 0;
       Ewtsqtausq(0) = 0;
@@ -103,7 +103,8 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
     Named("coefficients") = beta.rows(0,p-1),
     Named("fitted.values") = fits,
     Named("GCV") = GCV,
-    Rcpp::Named("Etausqinv") = Etausqinv
+    Rcpp::Named("Etausqinv") = Etausqinv,
+    Rcpp::Named("sigma") =  sigma
   );
 }
 
@@ -161,9 +162,9 @@ arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etau
       for (int j= 1; j < p; ++j) {
         //fitting with gamma=2, things are tractable.
         a = (abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2))*lambda_0*lambda_0/2;
-        w = 4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
+        w = 1;//4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
         Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)*w+pow(lambda_0,-2);
-        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*a;
+        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*w;
       }
       Etausqinv(0) = 0;
       Ewtsqtausq(0) = 0;
