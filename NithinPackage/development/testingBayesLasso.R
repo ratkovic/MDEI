@@ -25,3 +25,6 @@ g1<-GCV(y,cbind(1,X),alpha.seq,1e-4)
 bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],0.001)$coef[2:5]
 #sparsereg(y,X,EM=T,verbose=F)$coef[1:5]
 #microbenchmark(bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8),GCV(y,cbind(1,X),alpha.seq[1:20],1e-8),sparsereg(y,X,EM=T,verbose=F))
+
+
+#bayesLasso(y,cbind(1,X),0.01,0.001)$coef[2:5]
