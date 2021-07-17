@@ -1,5 +1,5 @@
 n<-200
-p<-10
+p<-100
 
 X <- matrix(rnorm(n*p),nrow=n)
 beta.true <- rep(0,p)

@@ -49,6 +49,8 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
   
   arma::vec beta = zeros(p);
   arma::vec beta_last = beta;
+  double a = 0;
+  double w = 0;
   
   int iters = 500; //I like to put constants like this as their own variables, so we can change the value later easily
   
@@ -56,7 +58,7 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
     
     if (conv/sdy > tol) {
       for (int j = 1; j < p; ++j) {
-        XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6;    
+        XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6; 
       }
       beta_last = beta;
       // Only select subarma::matrix after the first iteration
@@ -73,8 +75,11 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
       beta(update_ind) = solve(XpXsolve.submat(update_ind,update_ind),Xpy.rows(update_ind));
       fits = X*beta;
       for (int j= 1; j < p; ++j) {
-        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2);
-        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma;
+        //fitting with gamma=2, things are tractable.
+        a = (abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2))*lambda_0*lambda_0/2;
+        w = 4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
+        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)*w+pow(lambda_0,-2);
+        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*a;
       }
       Etausqinv(0) = 0;
       Ewtsqtausq(0) = 0;
@@ -122,6 +127,8 @@ arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etau
   double conv = 1;
   double edf = 0;
   double GCV = 0;
+  double a = 0;
+  double w = 0;
   
   arma::vec beta = zeros(p);
   arma::vec beta_last = beta;
@@ -147,9 +154,16 @@ arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etau
       
       beta(update_ind) = solve(XpXsolve.submat(update_ind,update_ind),Xpy.rows(update_ind));
       fits = X*beta;
+      //for (int j= 1; j < p; ++j) {
+      //  Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2);
+      //  Etausqinv(j)  = lambda_0/abs(beta(j))*sigma;
+      //}
       for (int j= 1; j < p; ++j) {
-        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2);
-        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma;
+        //fitting with gamma=2, things are tractable.
+        a = (abs(beta(j))/(lambda_0*sigma)+pow(lambda_0,-2))*lambda_0*lambda_0/2;
+        w = 4*pow(a+1,1.5)/pow(3.14159,.5)*(1/(2*(a+1)*a+1));
+        Ewtsqtausq(j)  = abs(beta(j))/(lambda_0*sigma)*w+pow(lambda_0,-2);
+        Etausqinv(j)  = lambda_0/abs(beta(j))*sigma*a;
       }
       Etausqinv(0) = 0;
       Ewtsqtausq(0) = 0;
