@@ -1,4 +1,4 @@
-n<-200
+n<-100
 p<-100
 
 X <- matrix(rnorm(n*p),nrow=n)
@@ -20,5 +20,8 @@ lm(y~X)$coef
 
 g1<-GCV(y,cbind(1,X),alpha.seq,1e-4)
 
-bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],0.001)$coef[1:5]
-mean(abs(bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8)$coef[-c(1:5)]))
+#microbenchmark(GCV(y,cbind(1,X),alpha.seq[1:10],1e-4),bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8) )
+
+bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],0.001)$coef[2:5]
+#sparsereg(y,X,EM=T,verbose=F)$coef[1:5]
+#microbenchmark(bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8),GCV(y,cbind(1,X),alpha.seq[1:20],1e-8),sparsereg(y,X,EM=T,verbose=F))
