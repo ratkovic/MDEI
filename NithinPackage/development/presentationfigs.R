@@ -14,11 +14,12 @@ y.true <- treat^2#*treat#*sign(X[,1])
 deriv.true <- (2*treat)#*sign(X[,1])
 y <- y.true+rnorm(n,sd=1)
 
-st1 <-sparseregTE(y,treat,X, splits=200)
+load('presrun.Rda')
+
+#st1 <-sparseregTE(y,treat,X, splits=200)
 g1 <- causal_forest(X,y,treat)
 
-save(st1,file="presrun.Rda")
-
+#save(st1,file="presrun.Rda")
 pos <- !is.na(X[,1])
 
 plot(treat[pos],st1$te.ave[pos],ylim=range(st1$CIs[pos,]),type="n")
@@ -57,7 +58,7 @@ points(treat,y,pch=19,cex=.25,col=gray(.8))
 lines(treat,treat^2,col=gray(.2),lwd=3,lty=2)
 lines(treat,2*treat,lwd=3)
 mtext(outer=F,line=2,side=1,"T");mtext(outer=F,line=2,side=2,"Y")
-legend("topleft",c("Conditional Mean","Slope"),lty=c(1,2),lwd=3,bty="n")
+legend("topleft",c("Conditional Mean","Slope"),lty=c(2,1),lwd=3,bty="n")
 dev.off()
 
 
