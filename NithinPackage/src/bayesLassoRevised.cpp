@@ -92,8 +92,10 @@ List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol) { //tol is 1
   }
   
   return List::create(
-    Named("intercept") = beta(0),
-    Named("coefficients") = beta.rows(1,p-1),
+    // Putting intercept back into coefficients
+    // Note we are expecting an intercept in the first row
+    //Named("intercept") = beta(0),
+    Named("coefficients") = beta.rows(0,p-1),
     Named("fitted.values") = fits,
     Named("GCV") = GCV,
     Rcpp::Named("Etausqinv") = Etausqinv
@@ -164,12 +166,13 @@ arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etau
     GCV = sum((y-fits)%(y-fits))/(den*den);
   }
   Etausqinv(0) = GCV;
+  Etausqinv = arma::vectorise(Etausqinv);
   return Etausqinv;
 }
 
 //[[Rcpp::export]]
 arma::vec GCV(arma::vec y, arma::mat X, arma::vec alphas, double tol) {
-  arma::vec Etausqinv(X.n_cols + 1);
+  arma::vec Etausqinv(X.n_cols);//Problem was here, had n_cols+1
   Etausqinv.fill(alphas(0)*stddev(y));
   arma::vec GCVs = alphas;
   int p = alphas.n_rows;
