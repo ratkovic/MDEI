@@ -4,6 +4,7 @@
 #include "RcppArmadillo.h"
 #include <RcppArmadilloExtensions/sample.h>
 #include "splines2Armadillo.h"
+#include <bayesLassoRevised.cpp>
 #include <queue>
 #include <vector>
 #include <time.h>
@@ -66,15 +67,33 @@ arma::vec myrank(arma::vec x) {
   unordered_map<int, int> umap;
   unordered_map<int, int> counts;
   
-  for (int i = 0; i < sorted.size(); ++i) {
+  for (unsigned int i = 0; i < sorted.size(); ++i) {
     umap[sorted[i]] += i + 1;
     counts[sorted[i]]++;
   }
   
-  for (int i = 0; i < sorted.size(); ++i) {
+  for (unsigned int i = 0; i < sorted.size(); ++i) {
     rank(i) = double(umap[x(i)]/(counts[x(i)] + 0.0));
   }
   return rank;
+}
+
+//[[Rcpp::export]]
+arma::vec checkcor(arma::mat cors, double thresh) {
+  arma::vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
+  for (unsigned int i = 0; i < cors.n_rows; ++i) {
+    if (stddev(cors.col(i)) != 0) {
+      for (unsigned int j = i; j < cors.n_cols; ++j) {
+        if (abs(cors(i, j)) > thresh) {
+          v(j) = 0;
+        }
+      }
+    }
+    else {
+      v(i) = 0;
+    }
+  }
+  return v; //vars marked zero are ones to not include
 }
 
 //[[Rcpp::export]]
@@ -92,8 +111,18 @@ arma::mat bsme(arma::vec x) {
   arma::mat n = arma::join_rows(m, cpos, cneg);
   uvec indices = {1, 4};
   n.shed_cols(indices);
-  return arma::join_rows(n, cneg, cpos);
+  arma::mat p = arma::join_rows(n, cneg, cpos);
+  arma::vec v = checkcor(p, 0.999);
+  
+  arma::uvec u(v.size());
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    u(i) = v(i);
+  }
+  
+  p.shed_cols(u);
+  return p;
 }
+
 //[[Rcpp::export]]
 arma::mat dbsme(arma::vec x) {
   x = myrank(x);
@@ -150,13 +179,17 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec treat, std::string treatName, long long unsigned int a) {
+List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec y, arma::vec replaceme, arma::vec treat, std::string treatName, arma::vec alphas, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
   unsigned int obs = X.n_rows;
   unsigned int covs = X.n_cols;
-  arma::vec v = arma::ones(obs);
-  for (int i = 0; i < obs; ++i) {
-    v(i) = i;
+  arma::vec sample = arma::ones(obs/2);
+  int count = 0;
+  for (unsigned int i = 0; i < obs; ++i) {
+    if (replaceme(i) == 1) {
+      sample(count) = i;
+      ++count;
+    }
   }
 
   List sB = splineBases(X, covs);
@@ -164,13 +197,13 @@ List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec 
   std::vector<int> colSizes = sB["vec"];
 
   arma::mat treatbs = bsme(treat);
-  arma::vec sample = subSamp(v);
+  //arma::vec sample = subSamp(v);
   
   arma::mat treatSubsamp = arma::zeros(obs/2, treatbs.n_cols);
   arma::mat XSubsamp = arma::zeros(obs/2, Xbs.n_cols);
   arma::vec ySubsamp = arma::zeros(obs/2);
   
-  for (int i = 0; i < obs/2; ++i) { //this just gets the certain rows/entries corresponding to the random sample
+  for (unsigned int i = 0; i < obs/2; ++i) { //this just gets the certain rows/entries corresponding to the random sample
     for (unsigned int j = 0; j < treatbs.n_cols; ++j) {
       treatSubsamp(i, j) = treatbs(sample(i), j);
       XSubsamp(i, j) = Xbs(sample(i), j);
@@ -183,7 +216,7 @@ List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec 
   arma::vec inter_temp = arma::zeros(treatbs.n_rows);
 
   for (double i = 0; i < treatbs.n_cols; ++i) {
-    for (double j = 0; j < Xbs.n_cols; ++j) {
+    for (double j = 0; j < Xbs.n_cols - 1; ++j) {
       for (double k = j + 1; k < Xbs.n_cols; ++k) {
         inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
@@ -219,8 +252,9 @@ List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec 
     int i = indexCurr(0);
     int j = indexCurr(1);
     int k = indexCurr(2);
-
+    
     interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
+    interTemp = (interTemp - mean(interTemp))/stddev(interTemp);
     
     int q_j = lower_bound(colSizes.begin(), colSizes.end(), j) - colSizes.begin();
     int r_j = 0;
@@ -240,27 +274,12 @@ List splineBasesAndCorrs(arma::mat X, std::vector<std::string> Xname, arma::vec 
     names.push_back(name);
     M = arma::join_rows(M, interTemp);
   }
+
+  arma::vec v = GCV(y, M, alphas, 1e-3);
+  v.print();
   
   return List::create(Named("cors") = indexCurrs, _["M"] = M, _["names"] = names); //returns a highest correlations, matrix M, variable names
 } 
-
-//[[Rcpp::export]]
-arma::vec checkcor(arma::mat cors, double thresh) {
-  arma::vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
-  for (unsigned int i = 0; i < cors.n_rows; ++i) {
-    if (stddev(cors.col(i)) != 0) {
-      for (unsigned int j = i; j < cors.n_cols; ++j) {
-        if (abs(cors(i, j)) > thresh) {
-          v(j) = 0;
-        }
-      }
-    }
-    else {
-      v(i) = 0;
-    }
-  }
-  return v; //vars marked zero are ones to not include
-}
 
 /*//[[Rcpp::export]]
 arma::mat gramschmidt(arma::vec y, arma::mat X) { //not finished yet. Right now it just finds the column with the max correlation
@@ -279,7 +298,7 @@ arma::mat gramschmidt(arma::vec y, arma::mat X) { //not finished yet. Right now 
 int main() {
   
   //tests
-   /*arma::vec a{3,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3};
+   /*arma::vec a{3,1,4,1,5,9,2,6,5,3};
 
    arma::mat b = bs2(a, 3);
    //b.print();
@@ -292,9 +311,9 @@ int main() {
    arma::mat d = bsme(a);
    d.print();
    
-   cout << "\n" << endl;
+   cout << "\n" << endl */
    
-   arma::mat e = dbsme(a);
+   /*arma::mat e = dbsme(a);
    //e.print();
    
    cout << "\n" << endl;
@@ -310,14 +329,13 @@ int main() {
    arma::mat h = L["Xbs"];
    h.print();*/
   
-  /*arma::mat X = randn(1000, 5);
-  arma::vec treat = randn(1000);
-  arma::vec y = 3*randu(1000) + 7;
-  List L = splineBasesAndCorrs(1000, 5, X, {"education", "race", "ethnicity", "income", "other"}, y, treat, "treatname", 20); 
+  arma::mat X = randn(10, 5);
+  arma::vec treat = randn(10);
+  arma::vec y = 3*randu(10) + 7;
+  arma::vec replaceme = {1, 1, 1, 1, 2, 1, 2, 2, 2, 2};
+  arma::vec alphas{1.1,1.2,1.3,10.1,10.2,10.3,100.1,100.2,100.3,100.4};
+  List L = splineBasesAndCorrs(X, {"education", "race", "ethnicity", "income", "other"}, y, replaceme, treat, "treatname", alphas, 20); 
   vector<vec> cors = L["cors"];
-  for (vec v : cors) {
-    cout << v(3) << endl;
-  }*/
   return 0;
 }
 
