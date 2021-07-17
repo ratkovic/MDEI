@@ -18,7 +18,7 @@ alpha.seq <- seq(alpha.max,p/100,length=100)
 bayesLasso(y,cbind(1,X),1,0.001)$coef
 lm(y~X)$coef
 
-g1<-GCV(y,cbind(1,X),alpha.seq,0.001)
+g1<-GCV(y,cbind(1,X),alpha.seq,1e-4)
 
-bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],0.001)$coef
-mean(abs(bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],0.001)$coef[-c(1:5)]))
+bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],0.001)$coef[1:5]
+mean(abs(bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8)$coef[-c(1:5)]))
