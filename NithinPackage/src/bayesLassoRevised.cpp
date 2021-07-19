@@ -116,9 +116,9 @@ arma::vec updateEtausqinv(arma::vec y, arma::mat X, double alpha, arma::vec Etau
   int n = X.n_rows;
   int p = X.n_cols;
   arma::vec Ewtsqtausq = ones(p);
-  arma::mat XpX = X.t()*X;
-  arma::mat Xpy = X.t()*y;
-  arma::mat XpXsolve = XpX;
+  arma::mat XpX = X.t()*X;  //pass these in?
+  arma::mat Xpy = X.t()*y;  // here too
+  arma::mat XpXsolve = XpX; // here too
   arma::vec fits = zeros(n);
   double lambda_0 = 1;
   
