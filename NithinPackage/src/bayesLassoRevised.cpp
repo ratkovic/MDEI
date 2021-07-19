@@ -309,7 +309,7 @@ List GCV(arma::vec y, arma::mat X, arma::vec alphas, double tol) {
   arma::vec w = L["GCV"];
   return List::create(Named("beta") = betas[alphas.n_rows - 2], _["Etausqinv"] = Etausqinvs[alphas.n_rows - 2], _["GCV"] = w(alphas.n_rows - 2));
 }
-
+/*
 //[[Rcpp::export]]
 int main() {
  arma::vec y{3, 1, 4, 1};
@@ -327,8 +327,4 @@ int main() {
  cout << gcv << endl;
  
  return 0;
-}
-
-/***R
-main()
-*/
+}*/
