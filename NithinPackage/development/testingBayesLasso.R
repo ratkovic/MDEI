@@ -12,18 +12,18 @@ y <- X%*%beta.true+rnorm(n)
 
 alpha.max <- 2*max(abs(t(X)%*%(y-mean(y))))*var(y)
 #alpha.max <- max(alpha.max,p*10)
-alpha.seq <- seq(alpha.max,p/100,length=100)
+alpha.seq <- seq(alpha.max*20,p/100,length=100)
 
 
-bayesLasso(y,cbind(1,X),1,0.001)$coef
+bayesLasso(y,cbind(1,X),alpha.seq[1]*200,1e-8)$coef[1:10]
 lm(y~X)$coef
 
 g1<-GCV(y,cbind(1,X),alpha.seq,1e-4)
 
-#microbenchmark(GCV(y,cbind(1,X),alpha.seq[1:10],1e-4),bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8) )
+#microbenchmark(GCV(y,cbind(1,X),alpha.seq[1:10],1e-4),bayesLasso(y,cbind(1,X),2*p,1e-8) )
 
-bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8)$coef[2:5]
-#microbenchmark(bayesLasso(y,cbind(1,X),alpha.seq[which.min(g1)],1e-8),GCV(y,cbind(1,X),alpha.seq[1:20],1e-8),sparsereg(y,X,EM=T,verbose=F,usesparseregweights=F),times=10)
+bayesLasso(y,cbind(1,X),12,1e-8)$coef[2:5]
+#microbenchmark(bayesLasso(y,cbind(1,X),alpha.seq[2],1e-8),GCV(y,cbind(1,X),alpha.seq,1e-8),sparsereg(y,X,EM=T,verbose=F,usesparseregweights=F),times=10)
 
 
 #bayesLasso(y,cbind(1,X),0.01,0.001)$coef[2:5]
