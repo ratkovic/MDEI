@@ -2,8 +2,6 @@
 
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
 #include "RcppArmadillo.h"
-#include <RcppArmadilloExtensions/sample.h>
-#include "splines2Armadillo.h"
 #include <bayesLassoRevised.cpp>
 #include <queue>
 #include <vector>
@@ -13,13 +11,12 @@
 using namespace arma;
 using namespace Rcpp;
 using namespace std;
-using namespace splines2;
+//using namespace splines2;
 
 // via the depends attribute we tell Rcpp to create hooks for
 // RcppArmadillo so that the build process will know what to do
 //
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(splines2)]]
 
 //' Check Spearman correlations between interactions in X and treatment
 //' 
@@ -91,7 +88,7 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arma::vec ySubsamp, std::vector<int> colSizes, arma::mat treatSubsamp, std::string treatName, long long unsigned int a) {
+List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arma::vec ySubsamp, std::vector<int> colSizes, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct, std::string treatName, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
   /*unsigned int obs = X.n_rows;
   unsigned int covs = X.n_cols;
@@ -164,8 +161,8 @@ List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arm
     int j = indexCurr(1);
     int k = indexCurr(2);
     
-    arma::vec interTemp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
-    interTemp = (interTemp - mean(interTemp))/stddev(interTemp);
+    arma::vec interConstruct = treatConstruct.col(i) % XConstruct.col(j) % XConstruct.col(k);
+    interConstruct = (interConstruct - mean(interConstruct))/stddev(interConstruct);
     
     int q_j = lower_bound(colSizes.begin(), colSizes.end(), j) - colSizes.begin();
     int r_j = 0;
@@ -183,7 +180,7 @@ List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arm
     
     std::string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(r_j) + "_x_" + Xname[q_k] + "_bs" + to_string(r_k);
     names.push_back(name);
-    M = arma::join_rows(M, interTemp);
+    M = arma::join_rows(M, interConstruct);
   }
   
   return List::create(Named("cors") = indexCurrs, _["M"] = M, _["names"] = names); //returns a highest correlations, matrix M, variable names
