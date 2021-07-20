@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
@@ -338,6 +337,8 @@ int main() {
  return 0;
 }*/
 =======
+=======
+>>>>>>> b43c7aab69c6998b2609484b19ddecdb9a1a9ce9
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
@@ -671,4 +672,3 @@ List GCV(arma::vec y, arma::mat X, arma::vec alphas, double tol) {
  
  return 0;
  }*/
->>>>>>> b43c7aab69c6998b2609484b19ddecdb9a1a9ce9
