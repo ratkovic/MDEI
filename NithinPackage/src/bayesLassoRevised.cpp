@@ -233,6 +233,10 @@ List update(List L, double tol) {
   double a = 0;
   double w = 0;
   
+  //Trying to just reinitialize?
+  Etausqinv = ones(p);
+  Ewtsqtausq = ones(p);
+  
   //arma::vec beta = arma::zeros(p);
   arma::vec beta_last = beta;
   
