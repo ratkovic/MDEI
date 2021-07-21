@@ -2,7 +2,6 @@
 
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
 #include "RcppArmadillo.h"
-#include <bayesLassoRevised.cpp>
 #include <queue>
 #include <vector>
 #include <time.h>
@@ -11,7 +10,6 @@
 using namespace arma;
 using namespace Rcpp;
 using namespace std;
-//using namespace splines2;
 
 // via the depends attribute we tell Rcpp to create hooks for
 // RcppArmadillo so that the build process will know what to do
@@ -60,20 +58,6 @@ arma::vec checkcor(arma::mat cors, double thresh) {
   }
   return v; //vars marked zero are ones to not include
 }
-/* 
-//[[Rcpp::export]]
-List splineBases(arma::mat X, int covs) { //Required for calculating cumulative sums
-  arma::mat Xbs;
-  std::vector<int> v;
-  v.push_back(0);
-  for (int i = 0; i < covs; ++i) {
-    arma::mat m = makebs(X.col(i));
-    Xbs = arma::join_rows(Xbs, m);
-    v.push_back(m.n_cols + v[i]);
-
-  }
-  return List::create(Named("Xbs") = Xbs, _["vec"] = v);
-}*/
 
 //[[Rcpp::export]]
 arma::vec subSamp(arma::vec v) {
@@ -88,37 +72,8 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arma::vec ySubsamp, std::vector<int> colSizes, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct, std::string treatName, long long unsigned int a) {
+List namesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xnames, arma::vec ySubsamp, std::vector<int> colSizes, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct, std::vector<std::string> treatNames, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
-  /*unsigned int obs = X.n_rows;
-  unsigned int covs = X.n_cols;
-  arma::vec sample = arma::ones(obs/2);
-  int count = 0;
-  for (unsigned int i = 0; i < obs; ++i) {
-    if (replaceme(i) == 1) {
-      sample(count) = i;
-      ++count;
-    }
-  }
-
-  List sB = splineBases(X, covs);
-  arma::mat Xbs = sB["Xbs"];
-  std::vector<int> colSizes = sB["vec"];
-
-  arma::mat treatbs = bsme(treat);
-  //arma::vec sample = subSamp(v);
-  
-  arma::mat treatSubsamp = arma::zeros(obs/2, treatbs.n_cols);
-  arma::mat XSubsamp = arma::zeros(obs/2, Xbs.n_cols);
-  arma::vec ySubsamp = arma::zeros(obs/2);
-  
-  for (unsigned int i = 0; i < obs/2; ++i) { //this just gets the certain rows/entries corresponding to the random sample
-    for (unsigned int j = 0; j < treatbs.n_cols; ++j) {
-      treatSubsamp(i, j) = treatbs(sample(i), j);
-      XSubsamp(i, j) = Xbs(sample(i), j);
-      ySubsamp(i) = y(sample(i));
-    }  
-  }*/
 
   priority_queue<arma::vec, std::vector<arma::vec>, Comp> pq;
   arma::vec indexCurr=arma::zeros(4);
@@ -153,7 +108,6 @@ List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arm
   
   arma::mat M;
   std::vector<std::string> names;
-  //arma::vec interTemp = arma::zeros(treatbs.n_rows);
   
   for (unsigned int l = 0; l < indexCurrs.size(); ++l) {
     arma::vec indexCurr = indexCurrs[l];
@@ -164,21 +118,7 @@ List splineBasesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xname, arm
     arma::vec interConstruct = treatConstruct.col(i) % XConstruct.col(j) % XConstruct.col(k);
     interConstruct = (interConstruct - mean(interConstruct))/stddev(interConstruct);
     
-    int q_j = lower_bound(colSizes.begin(), colSizes.end(), j) - colSizes.begin();
-    int r_j = 0;
-    if (colSizes[q_j] != j) {
-      --q_j;
-      r_j = j - colSizes[q_j];
-    }
-    
-    int q_k = lower_bound(colSizes.begin(), colSizes.end(), k) - colSizes.begin();
-    int r_k = 0;
-    if (colSizes[q_j] != k) {
-      --q_k;
-      r_k = k - colSizes[q_k];
-    }
-    
-    std::string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(r_j) + "_x_" + Xname[q_k] + "_bs" + to_string(r_k);
+    std::string name = treatNames[i] + "_bs" + to_string(i) + "_x_" + Xnames[j] + "_bs" + to_string(j) + "_x_" + Xnames[k] + "_bs" + to_string(k);
     names.push_back(name);
     M = arma::join_rows(M, interConstruct);
   }
@@ -232,14 +172,14 @@ int main() {
    cout << "\n" << endl;
    List L = splineBases(g, 3);
    arma::mat h = L["Xbs"];
-   h.print();
+   h.print(); 
   
   arma::mat X = randn(10, 5);
   arma::vec treat = randn(10);
   arma::vec y = 3*randu(10) + 7;
   arma::vec replaceme = {1, 1, 1, 1, 2, 1, 2, 2, 2, 2};
   arma::vec alphas{10,9,8,7,6,5,4,3,2,1};
-  List L = splineBasesAndCorrs(X, {"education", "race", "ethnicity", "income", "other"}, y, replaceme, treat, "treatname", 20); 
+  List L = namesAndCorrs(X, {"education", "race", "ethnicity", "income", "other"}, y, replaceme, treat, "treatname", 20); 
   arma::mat M = L["M"];
   M.print();
   List L2 = GCV(y, M, alphas, 1e-4);
