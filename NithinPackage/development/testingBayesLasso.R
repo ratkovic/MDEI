@@ -1,6 +1,6 @@
 library(microbenchmark)
 library(sparsereg)
-n<-1000
+n<-200
 p<-50
 
 X <- matrix(rnorm(n*p),nrow=n)
@@ -31,16 +31,18 @@ sparsereg(y,X,EM=T,verbose=F)$coef[1:10]
 
 #microbenchmark(GCV(y,cbind(1,X),alpha.seq[1:10],1e-4),bayesLasso(y,cbind(1,X),2*p,1e-8) )
 
-g.fun <- function(a) bayesLasso(y,cbind(1,X),a,1e-8)$GCV
+#g.fun <- function(a) bayesLasso(y,cbind(1,X),a,1e-8)$GCV
 
 
-  
+mean((y-cbind(1,X)%*%g1$beta)^2)^.5
+mean((y-sparsereg(y,X,EM=T,verbose=F)$fitted)^2)^.5
+
 #  microbenchmark(sapply(alpha.seq,g.fun),times=10)
 
 #minalpha <- which.min(g2)
 #bayesLasso(y,cbind(1,X),alpha.seq[minalpha],1e-8)
 #bayesLasso(y,cbind(1,X),12,1e-8)$GCV
-#microbenchmark(bayesLasso(y,cbind(1,X),alpha.median,1e-8),GCV(y,cbind(1,X),alpha.seq,1e-8),sparsereg(y,X,EM=T,verbose=F,usesparseregweights=T),times=10)
+microbenchmark(bayesLasso(y,cbind(1,X),alpha.median,1e-8),GCV(y,cbind(1,X),alpha.seq,1e-8),sparsereg(y,X,EM=T,verbose=F,usesparseregweights=T),times=10)
 
 
 #bayesLasso(y,cbind(1,X),0.01,0.001)$coef[2:5]
