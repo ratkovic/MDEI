@@ -88,18 +88,25 @@ sc1 <- splineCorrs(XSubsamp=as.matrix(Xmat),
                        #Xname=colnames.X,
                        ySubsamp=y,
                        #colSizes = cumsum(rep(23,ncol(X))),
-                       treatSubsamp = as.matrix(treatmat),
-                       XConstruct=as.matrix(Xmat),
-                       treatConstruct=as.matrix(treatmat),
+                       treatSubsamp = cbind(1,as.matrix(treatmat)),
+                       XConstruct=cbind(1,as.matrix(Xmat)),
+                       treatConstruct=cbind(1,as.matrix(treatmat)),
                        #treatName=colnames.treat,
                        a=100) 
   
 p <- ncol(sc1$M)
 alpha.median <- (n*log(p)*(p/n)+(p)*(n/p))/(p/n+n/p)*sd(y)
 
-alpha.seq<-seq(alpha.median*10,alpha.median/10,length=10)
+alpha.seq<-seq(alpha.median,alpha.median/10,length=10)
 
 
+g1 <- GCV(y,cbind(1,apply(sc1$M,2,scale)),alpha.seq,1e-5)
+
+cbind(1,sc1$M)%*%g1$beta
+
+s1 <- sparsereg(y,sc1$M,EM=T)
+
+cor(s1$fitted,treat^2)
 microbenchmark(GCV(y,cbind(1,sc1$M),alpha.seq,1e-5),times=10)
 
  
