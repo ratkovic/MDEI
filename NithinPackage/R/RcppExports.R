@@ -13,8 +13,12 @@ bayesLasso <- function(y, X, alpha, tol) {
     .Call(`_NithinPackage_bayesLasso`, y, X, alpha, tol)
 }
 
-updateEtausqinv <- function(y, X, alpha, Etausqinv, tol) {
-    .Call(`_NithinPackage_updateEtausqinv`, y, X, alpha, Etausqinv, tol)
+setupGCV <- function(y, X, alphas) {
+    .Call(`_NithinPackage_setupGCV`, y, X, alphas)
+}
+
+update <- function(L, tol) {
+    .Call(`_NithinPackage_update`, L, tol)
 }
 
 GCV <- function(y, X, alphas, tol) {
@@ -29,43 +33,27 @@ GCV <- function(y, X, alphas, tol) {
 #' @export
 NULL
 
-bs2 <- function(x, deg) {
-    .Call(`_NithinPackage_bs2`, x, deg)
-}
-
-dbs2 <- function(x, deg) {
-    .Call(`_NithinPackage_dbs2`, x, deg)
-}
-
-bsme <- function(x) {
-    .Call(`_NithinPackage_bsme`, x)
-}
-
-dbsme <- function(x) {
-    .Call(`_NithinPackage_dbsme`, x)
-}
-
-makebs <- function(X) {
-    .Call(`_NithinPackage_makebs`, X)
-}
-
-splineBases <- function(X, covs) {
-    .Call(`_NithinPackage_splineBases`, X, covs)
-}
-
-subSamp <- function(v) {
-    .Call(`_NithinPackage_subSamp`, v)
-}
-
-splineBasesAndCorrs <- function(obs, covs, X, Xname, y, treat, treatName, a) {
-    .Call(`_NithinPackage_splineBasesAndCorrs`, obs, covs, X, Xname, y, treat, treatName, a)
+myrank <- function(x) {
+    .Call(`_NithinPackage_myrank`, x)
 }
 
 checkcor <- function(cors, thresh) {
     .Call(`_NithinPackage_checkcor`, cors, thresh)
 }
 
-main <- function() {
-    .Call(`_NithinPackage_main`)
+subSamp <- function(v) {
+    .Call(`_NithinPackage_subSamp`, v)
+}
+
+namesAndCorrs <- function(XSubsamp, Xnames, ySubsamp, colSizes, treatSubsamp, XConstruct, treatConstruct, treatNames, a) {
+    .Call(`_NithinPackage_namesAndCorrs`, XSubsamp, Xnames, ySubsamp, colSizes, treatSubsamp, XConstruct, treatConstruct, treatNames, a)
+}
+
+checkcor <- function(cors, thresh) {
+    .Call(`_NithinPackage_checkcor`, cors, thresh)
+}
+
+splineCorrs <- function(XSubsamp, ySubsamp, treatSubsamp, XConstruct, treatConstruct, a) {
+    .Call(`_NithinPackage_splineCorrs`, XSubsamp, ySubsamp, treatSubsamp, XConstruct, treatConstruct, a)
 }
 
