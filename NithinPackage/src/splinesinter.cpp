@@ -72,7 +72,7 @@ struct Comp { //this is a comparator, used for the heap (priority_queue) in the 
 };
 
 //[[Rcpp::export]]
-List namesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xnames, arma::vec ySubsamp, std::vector<int> colSizes, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct, std::vector<std::string> treatNames, long long unsigned int a) {
+List namesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xnames, arma::vec ySubsamp, std::vector<int> colSizes, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct, arma::mat XConstructDerivative, arma::mat treatConstructDerivative, std::vector<std::string> treatNames, long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
 
   priority_queue<arma::vec, std::vector<arma::vec>, Comp> pq;
@@ -106,7 +106,9 @@ List namesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xnames, arma::ve
     pq.pop();
   }
   
-  arma::mat M;
+  arma::mat Msubsamp;
+  arma::mat MConstruct;
+  arma::mat MConstructDerivative;
   std::vector<std::string> names;
   
   for (unsigned int l = 0; l < indexCurrs.size(); ++l) {
@@ -114,16 +116,23 @@ List namesAndCorrs(arma::mat XSubsamp, std::vector<std::string> Xnames, arma::ve
     int i = indexCurr(0);
     int j = indexCurr(1);
     int k = indexCurr(2);
+    arma::vec interSubsamp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
+    interSubsamp = (interSubsamp - mean(interSubsamp))/stddev(interSubsamp);
     
     arma::vec interConstruct = treatConstruct.col(i) % XConstruct.col(j) % XConstruct.col(k);
     interConstruct = (interConstruct - mean(interConstruct))/stddev(interConstruct);
     
+    arma::vec interConstructDerivative = treatConstructDerivative.col(i) % XConstructDerivative.col(j) % XConstructDerivative.col(k);
+    interConstructDerivative = (interConstructDerivative - mean(interConstructDerivative))/stddev(interConstructDerivative);
+    
     std::string name = treatNames[i] + "_bs" + to_string(i) + "_x_" + Xnames[j] + "_bs" + to_string(j) + "_x_" + Xnames[k] + "_bs" + to_string(k);
     names.push_back(name);
-    M = arma::join_rows(M, interConstruct);
+    Msubsamp = arma::join_rows(Msubsamp, interSubsamp);
+    MConstruct = arma::join_rows(MConstruct, interConstruct);
+    MConstructDerivative = arma::join_rows(MConstructDerivative, interConstructDerivative);
   }
   
-  return List::create(Named("cors") = indexCurrs, _["M"] = M, _["names"] = names); //returns a highest correlations, matrix M, variable names
+  return List::create(Named("cors") = indexCurrs, _["Msubamp"] = Msubsamp, _["MConstruct"] = MConstruct, _["MConstructDerivative"] = MConstructDerivative, _["names"] = names); //returns a highest correlations, matrix M, variable names
 } 
 /*
 //[[Rcpp::export]]
