@@ -55,6 +55,15 @@ splineCorrs.temp <- splineCorrs(
   a = 100
 )
 
+splinebases.temp <- splineCorrs.temp$M
+
+
+maxalpha <- n*log(ncol(splinebases.temp))
+minalpha <- p
+alpha.seq <- exp(sequence(log(maxalpha),log(minalpha),length=10))
+g1<-GCV(y.partial[replaceme==2],splinebases.temp, alpha.seq, tol=sd(y)*1e-6)
+
+cor(splinebases.temp%*%g1$beta,treat.partial[replaceme==2]^2)
 
 ####################################
 ### Auxiliary functions -------
