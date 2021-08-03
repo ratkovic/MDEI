@@ -119,3 +119,66 @@ List splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp,
   
   return List::create(Named("cors") = indexCurrs, _["M"] = M); //returns a highest correlations, matrix M, variable names
 } 
+
+
+//[[Rcpp::export]]
+List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct, arma::mat XConstructDerivative, arma::mat treatConstructDerivative,  long long unsigned int a) {
+  //a is number of top results, i.e. top 100 or top 300
+  
+  priority_queue<arma::vec, std::vector<arma::vec>, Comp> pq;
+  arma::vec indexCurr=arma::zeros(4);
+  double cor_temp = 0;
+  
+  for (double i = 0; i < treatSubsamp.n_cols; ++i) {
+    for (double j = 0; j < XSubsamp.n_cols - 1; ++j) {
+      for (double k = j + 1; k < XSubsamp.n_cols; ++k) {
+        arma::vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
+        
+        
+          cor_temp = abs(as_scalar(arma::cor(ySubsamp, inter_temp)));
+          if(!arma::is_finite(cor_temp)) cor_temp = 0;
+          
+        indexCurr(0) = i;
+        indexCurr(1) = j;
+        indexCurr(2) = k;
+        indexCurr(3) = cor_temp;
+        pq.push(indexCurr);
+        if (pq.size() > a) { //this keeps the size of the heap to exactly a
+          pq.pop();
+        }
+      }
+    }
+  }
+  
+  std::vector<arma::vec> indexCurrs;
+  
+  while (!pq.empty()) {
+    indexCurrs.push_back(pq.top());
+    pq.pop();
+  }
+  
+  arma::mat Msubsamp;
+  arma::mat MConstruct;
+  arma::mat MConstructDerivative;
+  
+  for (unsigned int l = 0; l < indexCurrs.size(); ++l) {
+    arma::vec indexCurr = indexCurrs[l];
+    int i = indexCurr(0);
+    int j = indexCurr(1);
+    int k = indexCurr(2);
+    arma::vec interSubsamp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
+    interSubsamp = (interSubsamp - mean(interSubsamp))/stddev(interSubsamp);
+    
+    arma::vec interConstruct = treatConstruct.col(i) % XConstruct.col(j) % XConstruct.col(k);
+    interConstruct = (interConstruct - mean(interConstruct))/stddev(interConstruct);
+    
+    arma::vec interConstructDerivative = treatConstructDerivative.col(i) % XConstructDerivative.col(j) % XConstructDerivative.col(k);
+    interConstructDerivative = (interConstructDerivative - mean(interConstructDerivative))/stddev(interConstructDerivative);
+    
+    Msubsamp = arma::join_rows(Msubsamp, interSubsamp);
+    MConstruct = arma::join_rows(MConstruct, interConstruct);
+    MConstructDerivative = arma::join_rows(MConstructDerivative, interConstructDerivative);
+  }
+  
+  return List::create(Named("cors") = indexCurrs, _["Msubamp"] = Msubsamp, _["MConstruct"] = MConstruct, _["MConstructDerivative"] = MConstructDerivative); //returns a highest correlations, matrix M, variable names
+} 

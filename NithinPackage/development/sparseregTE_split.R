@@ -4,7 +4,7 @@ library(microbenchmark)
 if(F){
   Rcpp::sourceCpp('Dropbox/Github/warmup/NithinPackage/src/splinesinter_short.cpp')
   Rcpp::sourceCpp('Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
-  
+  source('sparseregTE_auxiliary.R')
   n<-200
   p<-5
   
@@ -25,9 +25,9 @@ if(F){
 ## First, turn covariates and treatment into spline bases, save these ----
 n<-length(treat)
 treatmat <- bs.me(treat)
-Xmat<-matrix(apply(X,2,bs.me),nrow=n)
+Xmat<-cbind(1,matrix(apply(X,2,bs.me),nrow=n))
 
-colnames.treat <- paste("treat",1:ncol(treatmat),sep="")
+
 colnames.X <- paste("X",1:ncol(Xmat),sep="")
 
 ## Now, start split sample here ----
@@ -43,6 +43,8 @@ replaceme <- sample(replaceme)
 y.partial <- partialOut(y, X, replaceme)
 treat.partial <- partialOut(treat, X, replaceme)
 treatmat.partial <- bs.me(treat.partial)
+colnames.treat <- paste("treat",1:ncol(treatmat.partial),sep="")
+
 ## Calculate correlations
 
 #splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct,  long long unsigned int a)
@@ -52,10 +54,36 @@ splineCorrs.temp <- splineCorrs(
   treatSubsamp = treatmat.partial[replaceme==1,],
   XConstruct = Xmat[replaceme==2,],
   treatConstruct = treatmat.partial[replaceme==2,],
-  a = 100
+  a = 50
 )
 
 splinebases.temp <- splineCorrs.temp$M
+
+#List namesAndCorrs(arma::mat XSubsamp,
+# std::vector<std::string> Xnames, 
+# arma::vec ySubsamp, 
+# std::vector<int> colSizes, 
+# arma::mat treatSubsamp, 
+# arma::mat XConstruct, 
+# arma::mat treatConstruct, 
+# arma::mat XConstructDerivative, 
+# arma::mat treatConstructDerivative, 
+# std::vector<std::string> treatNames, 
+# long long unsigned int a) 
+  
+
+splinebases.obj <- namesAndCorrs(
+  XSubsamp =  Xmat[replaceme==1,],
+  # Xnames = colnames.X,
+  ySubsamp = y.partial[replaceme==1],
+  treatSubsamp = treatmat.partial[replaceme==1,],
+  XConstruct = Xmat[replaceme==2,],
+  treatConstruct = treatmat.partial[replaceme==2,],
+  XConstructDerivative = Xmat[replaceme==2,],
+  treatConstructDerivative = treatmat.partial[replaceme==2,],
+  # treatNames = colnames.treat,
+  a = 50
+)
 
 
 maxalpha <- n*log(ncol(splinebases.temp))
