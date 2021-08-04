@@ -5,7 +5,7 @@ if(F){
   Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/splinesinter_short.cpp')
   Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
   source('~/Dropbox/Github/warmup/NithinPackage/R/sparseregTE_auxiliary.R')
-  n<-200
+  n<-2000
   p<-5
   
   X <- matrix(rnorm(n*p),nrow=n)
@@ -14,8 +14,8 @@ if(F){
   colnames(X) <- paste("X",1:ncol(X),sep="_")
   treat<- rnorm(n)
   
-  y <- treat^2 + X[,3]+treat*X[,2]+rnorm(n)
-  tau.true = 2*treat +X[,2]
+  y <- treat^2 + X[,3]+rnorm(n)
+  tau.true = 2*treat# +X[,2]
 
   
   }
@@ -83,17 +83,21 @@ bases.obj <- namesAndCorrs(
   XConstructDerivative = Xmat[replaceme==2,],
   treatConstructDerivative = treatmat.tau[replaceme==2,],
   # treatNames = colnames.treat,
-  a = 50
+  a = 100
 )
 
+keeps <- as.vector(checkcor(bases.obj$Msubamp, 0.95))
 
+bases.obj$Msubamp <- bases.obj$Msubamp[,keeps]
+bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
+bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
 
-maxalpha <- n*log(ncol(bases.obj$Msubamp))
+maxalpha <- n*log(ncol(bases.obj$Msubamp))*5
 minalpha <- p
 alpha.seq <- sequence((maxalpha),(minalpha),length=10)
 g1<-GCV(y.partial[replaceme==1],cbind(1,bases.obj$Msubamp), alpha.seq, tol=sd(y)*1e-6)
 
-beta.try <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubamp,EM=T, verbose=F, iter.initialize=0)
+beta.try <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubamp,EM=T, verbose=F, iter.initialize=20)
 
 cor(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
 cor(cbind(0,bases.obj$MConstructDerivative)%*%beta.try$coefficients[1,],tau.true[replaceme==2])
@@ -101,50 +105,4 @@ cor(cbind(0,bases.obj$MConstructDerivative)%*%beta.try$coefficients[1,],tau.true
 plot(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
 
 plot(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
-
-####################################
-### Auxiliary functions -------
-
-
-## B spline functions -----
-##  Make a bspline matrix from a vector 
-#' @export
-bs.me<-function(x){
-  m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
-  return(m2)
-  
-}
-
-##  Derivative of bspline from bs.me 
-#' @export
-dbs.me<-function(x){
-  m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4))#,dbs2(x,df=5),dbs2(x,df=6))
-  return(m1)
-  
-}
-
-##  Making a single set of bases and derivative
-
-bSpline2<-function(x,...){
-  mx <- median(x)
-  b1<-bSpline(x,knots=mx,...)
-  b2<-bSpline(-x,knots=mx,...)
-  cbind(b2[,ncol(b2)],b1)
-}
-
-dbs2<-function(x,...){
-  mx <- median(x)
-  b1<-dbs(x,knots=mx,...)
-  b2<-dbs(-x,knots=mx,...)
-  cbind(-b2[,ncol(b2)],b1)
-}
-
-## Partial out X
-partialOut <- function(y, X, replaceme){
-  mod1 <- ranger(y~., data=data.frame(X), case.weights = 1*(replaceme==1), num.trees=1000,
-                 write.forest = F)
-  y.partialout <- y-mod1$predictions
-  y.partialout - mean(y.partialout[replaceme==1])
-
-}
 

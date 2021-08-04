@@ -22,21 +22,19 @@ arma::vec checkcor(arma::mat X, double thresh) {
   arma::mat cors = arma::cor(X);
   arma::vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
   for (unsigned int i = 0; i < cors.n_rows; ++i) {
-    //if (stddev(X.col(i)) > 0) {
+    if (stddev(X.col(i)) > 0) {
       for (unsigned int j = i+1; j < cors.n_cols; ++j) {
         if ( abs(cors(i, j)) > thresh) {
           v(j) = 0;
         }
       }
-    //}
-    //else {
-      //v(i) = 0;
-    //}
+    }
+    else {
+      v(i) = 0;
+    }
   }
   return v; //vars marked zero are ones to not include
 }
-
-
 
 
 struct Comp { //this is a comparator, used for the heap (priority_queue) in the function below
