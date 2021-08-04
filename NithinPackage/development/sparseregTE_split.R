@@ -2,9 +2,9 @@ library(splines2)
 library(ranger)
 library(microbenchmark)
 if(F){
-  Rcpp::sourceCpp('Dropbox/Github/warmup/NithinPackage/src/splinesinter_short.cpp')
-  Rcpp::sourceCpp('Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
-  source('sparseregTE_auxiliary.R')
+  Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/splinesinter_short.cpp')
+  Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
+  source('~/Dropbox/Github/warmup/NithinPackage/R/sparseregTE_auxiliary.R')
   n<-200
   p<-5
   
@@ -15,7 +15,7 @@ if(F){
   treat<- rnorm(n)
   
   y <- treat^2 + X[,3]+treat*X[,2]+rnorm(n)
-  
+  tau.true = 2*treat +X[,2]
 
   
   }
@@ -42,22 +42,23 @@ replaceme <- sample(replaceme)
 
 y.partial <- partialOut(y, X, replaceme)
 treat.partial <- partialOut(treat, X, replaceme)
-treatmat.partial <- bs.me(treat.partial)
-colnames.treat <- paste("treat",1:ncol(treatmat.partial),sep="")
+treatmat.theta <- bs.me(treat.partial)
+treatmat.tau <- dbs.me(treat.partial)
+colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
 
 ## Calculate correlations
 
-#splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct,  long long unsigned int a)
-splineCorrs.temp <- splineCorrs(
-  XSubsamp = Xmat[replaceme==1,],
-  ySubsamp = y.partial[replaceme==1],
-  treatSubsamp = treatmat.partial[replaceme==1,],
-  XConstruct = Xmat[replaceme==2,],
-  treatConstruct = treatmat.partial[replaceme==2,],
-  a = 50
-)
-
-splinebases.temp <- splineCorrs.temp$M
+# #splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct,  long long unsigned int a)
+# splineCorrs.temp <- splineCorrs(
+#   XSubsamp = Xmat[replaceme==1,],
+#   ySubsamp = y.partial[replaceme==1],
+#   treatSubsamp = treatmat.partial[replaceme==1,],
+#   XConstruct = Xmat[replaceme==2,],
+#   treatConstruct = treatmat.partial[replaceme==2,],
+#   a = 50
+# )
+# 
+# splinebases.temp <- splineCorrs.temp$M
 
 #List namesAndCorrs(arma::mat XSubsamp,
 # std::vector<std::string> Xnames, 
@@ -72,26 +73,34 @@ splinebases.temp <- splineCorrs.temp$M
 # long long unsigned int a) 
   
 
-splinebases.obj <- namesAndCorrs(
+bases.obj <- namesAndCorrs(
   XSubsamp =  Xmat[replaceme==1,],
   # Xnames = colnames.X,
   ySubsamp = y.partial[replaceme==1],
-  treatSubsamp = treatmat.partial[replaceme==1,],
+  treatSubsamp = treatmat.theta[replaceme==1,],
   XConstruct = Xmat[replaceme==2,],
-  treatConstruct = treatmat.partial[replaceme==2,],
+  treatConstruct = treatmat.theta[replaceme==2,],
   XConstructDerivative = Xmat[replaceme==2,],
-  treatConstructDerivative = treatmat.partial[replaceme==2,],
+  treatConstructDerivative = treatmat.tau[replaceme==2,],
   # treatNames = colnames.treat,
   a = 50
 )
 
 
-maxalpha <- n*log(ncol(splinebases.temp))
-minalpha <- p
-alpha.seq <- exp(sequence(log(maxalpha),log(minalpha),length=10))
-g1<-GCV(y.partial[replaceme==2],splinebases.temp, alpha.seq, tol=sd(y)*1e-6)
 
-cor(splinebases.temp%*%g1$beta,treat.partial[replaceme==2]^2)
+maxalpha <- n*log(ncol(bases.obj$Msubamp))
+minalpha <- p
+alpha.seq <- sequence((maxalpha),(minalpha),length=10)
+g1<-GCV(y.partial[replaceme==1],cbind(1,bases.obj$Msubamp), alpha.seq, tol=sd(y)*1e-6)
+
+beta.try <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubamp,EM=T, verbose=F, iter.initialize=0)
+
+cor(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
+cor(cbind(0,bases.obj$MConstructDerivative)%*%beta.try$coefficients[1,],tau.true[replaceme==2])
+
+plot(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
+
+plot(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
 
 ####################################
 ### Auxiliary functions -------

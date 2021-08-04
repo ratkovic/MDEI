@@ -18,19 +18,20 @@ using namespace std;
 
 
 //[[Rcpp::export]]
-arma::vec checkcor(arma::mat cors, double thresh) {
+arma::vec checkcor(arma::mat X, double thresh) {
+  arma::mat cors = arma::cor(X);
   arma::vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
   for (unsigned int i = 0; i < cors.n_rows; ++i) {
-    if (stddev(cors.col(i)) != 0) {
-      for (unsigned int j = i; j < cors.n_cols; ++j) {
-        if (abs(cors(i, j)) > thresh) {
+    //if (stddev(X.col(i)) > 0) {
+      for (unsigned int j = i+1; j < cors.n_cols; ++j) {
+        if ( abs(cors(i, j)) > thresh) {
           v(j) = 0;
         }
       }
-    }
-    else {
-      v(i) = 0;
-    }
+    //}
+    //else {
+      //v(i) = 0;
+    //}
   }
   return v; //vars marked zero are ones to not include
 }
@@ -128,6 +129,7 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
   priority_queue<arma::vec, std::vector<arma::vec>, Comp> pq;
   arma::vec indexCurr=arma::zeros(4);
   double cor_temp = 0;
+  double sd_adjust = 0;
   
   for (double i = 0; i < treatSubsamp.n_cols; ++i) {
     for (double j = 0; j < XSubsamp.n_cols - 1; ++j) {
@@ -167,13 +169,14 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
     int j = indexCurr(1);
     int k = indexCurr(2);
     arma::vec interSubsamp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
-    interSubsamp = (interSubsamp - mean(interSubsamp))/stddev(interSubsamp);
+    sd_adjust = stddev(interSubsamp);
+    interSubsamp = interSubsamp / sd_adjust;
     
     arma::vec interConstruct = treatConstruct.col(i) % XConstruct.col(j) % XConstruct.col(k);
-    interConstruct = (interConstruct - mean(interConstruct))/stddev(interConstruct);
+    interConstruct = interConstruct / sd_adjust;
     
     arma::vec interConstructDerivative = treatConstructDerivative.col(i) % XConstructDerivative.col(j) % XConstructDerivative.col(k);
-    interConstructDerivative = (interConstructDerivative - mean(interConstructDerivative))/stddev(interConstructDerivative);
+    interConstructDerivative = interConstructDerivative / sd_adjust;
     
     Msubsamp = arma::join_rows(Msubsamp, interSubsamp);
     MConstruct = arma::join_rows(MConstruct, interConstruct);

@@ -237,8 +237,8 @@ List update(List L, double tol) {
   //Etausqinv = ones(p);
   //Ewtsqtausq = ones(p);
   for(int i = 0; i < p; ++i){
-    if(Etausqinv(i)< 1) Etausqinv(i)=1;
-    if(Etausqinv(i)> 1000) Etausqinv(i)=1000;
+    if(Etausqinv(i)< 10) Etausqinv(i)=10;
+    if(Etausqinv(i)> 100) Etausqinv(i)=100;
     //if(Ewtsqtausq(i)< 1) Ewtsqtausq(i)=1;
     //if(Ewtsqtausq(i)> 1000) Ewtsqtausq(i)=1000;
   }

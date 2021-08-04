@@ -21,17 +21,17 @@ dbs.me<-function(x){
 
 ##  Making a single set of bases and derivative
 
-bSpline2<-function(x,...){
+bSpline2<-function(x,df,...){
   mx <- median(x)
-  b1<-bSpline(x,knots=mx,...)
-  b2<-bSpline(-x,knots=mx,...)
+  b1<-bSpline(x,knots=mx,degree=df,...)
+  b2<-bSpline(-x,knots=mx,degree=df,...)
   cbind(b2[,ncol(b2)],b1)
 }
 
-dbs2<-function(x,...){
+dbs2<-function(x,df,...){
   mx <- median(x)
-  b1<-dbs(x,knots=mx,...)
-  b2<-dbs(-x,knots=mx,...)
+  b1<-dbs(x,knots=mx,degree=df,...)
+  b2<-dbs(-x,knots=mx,degree=df,...)
   cbind(-b2[,ncol(b2)],b1)
 }
 
