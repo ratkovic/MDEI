@@ -39,16 +39,16 @@ arma::vec checkcor(arma::mat X, double thresh) {
 
 
 struct Comp { //this is a comparator, used for the heap (priority_queue) in the function below
-  public:
-    bool operator()(arma::vec a, arma::vec b) {
-      return a(3) > b(3);
-    }
+public:
+  bool operator()(arma::vec a, arma::vec b) {
+    return a(3) < b(3);
+  }
 };
 
 //[[Rcpp::export]]
 List splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct,  long long unsigned int a) {
   //a is number of top results, i.e. top 100 or top 300
-
+  
   priority_queue<arma::vec, std::vector<arma::vec>, Comp> pq;
   arma::vec indexCurr=arma::zeros(4);
   double cor_temp = 0;
@@ -76,14 +76,14 @@ List splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp,
   }
   
   std::vector<arma::vec> indexCurrs;
-
+  
   while (!pq.empty()) {
     indexCurrs.push_back(pq.top());
     pq.pop();
   }
   
   arma::mat M;
-// std::vector<std::string> names;
+  // std::vector<std::string> names;
   //arma::vec interTemp = arma::zeros(treatbs.n_rows);
   
   for (unsigned int l = 0; l < indexCurrs.size(); ++l) {
@@ -96,23 +96,23 @@ List splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp,
     // interConstruct = (interConstruct - mean(interConstruct))/stddev(interConstruct);
     
     /*
-    int q_j = lower_bound(colSizes.begin(), colSizes.end(), j) - colSizes.begin();
-    int r_j = 0;
-    if (colSizes[q_j] != j) {
-      --q_j;
-      r_j = j - colSizes[q_j];
-    }
-    
-    
-    int q_k = lower_bound(colSizes.begin(), colSizes.end(), k) - colSizes.begin();
-    int r_k = 0;
-    if (colSizes[q_j] != k) {
-      --q_k;
-      r_k = k - colSizes[q_k];
-    }
-    
-    std::string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(r_j) + "_x_" + Xname[q_k] + "_bs" + to_string(r_k);
-    names.push_back(name);
+     int q_j = lower_bound(colSizes.begin(), colSizes.end(), j) - colSizes.begin();
+     int r_j = 0;
+     if (colSizes[q_j] != j) {
+     --q_j;
+     r_j = j - colSizes[q_j];
+     }
+     
+     
+     int q_k = lower_bound(colSizes.begin(), colSizes.end(), k) - colSizes.begin();
+     int r_k = 0;
+     if (colSizes[q_j] != k) {
+     --q_k;
+     r_k = k - colSizes[q_k];
+     }
+     
+     std::string name = treatName + "_bs" + to_string(i) + "_x_" + Xname[q_j] + "_bs" + to_string(r_j) + "_x_" + Xname[q_k] + "_bs" + to_string(r_k);
+     names.push_back(name);
      */
     M = arma::join_rows(M, interConstruct);
   }
@@ -136,10 +136,10 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
         arma::vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         
-          cor_temp = as_scalar(arma::cor(ySubsamp, inter_temp));
-          if(cor_temp < 0) cor_temp = -cor_temp;
-          if(!arma::is_finite(cor_temp)) cor_temp = 0;
-          
+        cor_temp = as_scalar(arma::cor(ySubsamp, inter_temp));
+        if(cor_temp < 0) cor_temp = -cor_temp;
+        if(!arma::is_finite(cor_temp)) cor_temp = 0;
+        
         indexCurr(0) = i;
         indexCurr(1) = j;
         indexCurr(2) = k;
@@ -184,4 +184,4 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
   }
   
   return List::create(Named("cors") = indexCurrs, _["Msubsamp"] = Msubsamp, _["MConstruct"] = MConstruct, _["MConstructDerivative"] = MConstructDerivative); //returns a highest correlations, matrix M, variable names
-} 
+}
