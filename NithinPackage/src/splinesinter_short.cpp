@@ -41,7 +41,7 @@ arma::vec checkcor(arma::mat X, double thresh) {
 struct Comp { //this is a comparator, used for the heap (priority_queue) in the function below
 public:
   bool operator()(arma::vec a, arma::vec b) {
-    return a(3) < b(3);
+    return a(3) > b(3);
   }
 };
 
