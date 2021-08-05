@@ -48,30 +48,6 @@ colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
 
 ## Calculate correlations
 
-# #splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp, arma::mat XConstruct, arma::mat treatConstruct,  long long unsigned int a)
-# splineCorrs.temp <- splineCorrs(
-#   XSubsamp = Xmat[replaceme==1,],
-#   ySubsamp = y.partial[replaceme==1],
-#   treatSubsamp = treatmat.partial[replaceme==1,],
-#   XConstruct = Xmat[replaceme==2,],
-#   treatConstruct = treatmat.partial[replaceme==2,],
-#   a = 50
-# )
-# 
-# splinebases.temp <- splineCorrs.temp$M
-
-#List namesAndCorrs(arma::mat XSubsamp,
-# std::vector<std::string> Xnames, 
-# arma::vec ySubsamp, 
-# std::vector<int> colSizes, 
-# arma::mat treatSubsamp, 
-# arma::mat XConstruct, 
-# arma::mat treatConstruct, 
-# arma::mat XConstructDerivative, 
-# arma::mat treatConstructDerivative, 
-# std::vector<std::string> treatNames, 
-# long long unsigned int a) 
-  
 n1 <- sum(replaceme==1)
 bases.obj <- namesAndCorrs(
   XSubsamp =  Xmat[replaceme==1,],
@@ -83,7 +59,7 @@ bases.obj <- namesAndCorrs(
   XConstructDerivative = Xmat[replaceme==2,],
   treatConstructDerivative = treatmat.tau[replaceme==2,],
   # treatNames = colnames.treat,
-  a = 25*(1+n1^.2)
+  a = ceiling(25*(1+n1^.2))
 )
 
 nc1<-ncol(bases.obj$Msubsamp)
@@ -92,7 +68,7 @@ bases.obj$MConstruct <- bases.obj$MConstruct[,nc1:1]
 bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,nc1:1]
 
 cormat <- t(matrix(unlist(bases.obj$cors),nrow=4))
-
+cormat <- cormat[(nrow(cormat)):1,]
 keeps <- which(as.vector(checkcor(apply(bases.obj$Msubsamp,2,rank), .9))==1)
 
 bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
