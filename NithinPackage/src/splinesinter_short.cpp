@@ -155,11 +155,15 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
     }
   }
   
-  std::vector<arma::vec> indexCurrs;
+  arma::vec iCurr = arma::zeros(4);
+  std::vector<arma::vec> indexCurrs(a, iCurr);
+  
+  int i = a - 1;
   
   while (!pq.empty()) {
-    indexCurrs.push_back(pq.top());
+    indexCurrs[i] = pq.top();
     pq.pop();
+    --i;
   }
   
   arma::mat Msubsamp;
