@@ -36,8 +36,6 @@ replaceme <- rep(1,n)
 replaceme[1:floor(n/2)] <- 2
 replaceme <- sample(replaceme)
 
-
-
 ## Partial out X's ----
 
 y.partial <- partialOut(y, X, replaceme)
@@ -75,24 +73,18 @@ bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
 bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
 bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
 
-# maxalpha <- n*log(ncol(bases.obj$Msubsamp))*5
-# minalpha <- p
-# alpha.seq <- sequence((maxalpha),(minalpha),length=10)
-# g1<-GCV(y.partial[replaceme==1],cbind(1,bases.obj$Msubsamp), alpha.seq, tol=sd(y)*1e-6)
 
-sp1<- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0)
+sp1<- sparsereg::sparsereg(y.partial[replaceme==1]+mean(y[replaceme==1]),bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0)
+
+
 beta.try <- sp1$coef[1,]
 plot(treat[replaceme==1],sp1$fitted)
 treat.seq <- seq(min(treat),max(treat),length=1000)
 lines(treat.seq,treat.seq^2)
 
-#cor(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
 cor(cbind(0,bases.obj$MConstructDerivative)%*%beta.try,tau.true[replaceme==2])
 
 plot(treat,treat*2,type="l")
 points(treat[replaceme==2],cbind(0,bases.obj$MConstructDerivative)%*%beta.try)
 lines(treat.seq,2*treat.seq)
-#plot(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
-
-#plot(cbind(0,bases.obj$MConstructDerivative)%*%g1$beta,tau.true[replaceme==2])
 
