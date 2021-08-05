@@ -74,12 +74,15 @@ List splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp,
       }
     }
   }
+  arma::vec iCurr = arma::zeros(4);
+  std::vector<arma::vec> indexCurrs(a, iCurr);
   
-  std::vector<arma::vec> indexCurrs;
+  int i = a - 1;
   
   while (!pq.empty()) {
-    indexCurrs.push_back(pq.top());
+    indexCurrs[i] = pq.top();
     pq.pop();
+    --i;
   }
   
   arma::mat M;
