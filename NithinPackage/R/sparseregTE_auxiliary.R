@@ -6,7 +6,11 @@
 ##  Make a bspline matrix from a vector 
 #' @export
 bs.me<-function(x){
+  x <- scale(rank(x))
   m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
+  # m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4),
+  #           bSpline2(-x,df=3),bSpline2(-x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
+  # 
   return(m2)
   
 }
@@ -14,7 +18,10 @@ bs.me<-function(x){
 ##  Derivative of bspline from bs.me 
 #' @export
 dbs.me<-function(x){
+  x<-scale(rank(x))
   m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4))#,dbs2(x,df=5),dbs2(x,df=6))
+  # m1<-cbind(x,dbs(x,df=3),dbs(x,df=4),
+  #           -dbs(-x,df=3),-dbs(-x,df=4))
   return(m1)
   
 }

@@ -21,10 +21,11 @@ using namespace std;
 arma::vec checkcor(arma::mat X, double thresh) {
   arma::mat cors = arma::cor(X);
   arma::vec v = ones(cors.n_cols); //include all vars initially. This is a bitmask where 1 means to include var and 0 means not to
+  double threshsq = thresh*thresh;
   for (unsigned int i = 0; i < cors.n_rows; ++i) {
     if (stddev(X.col(i)) > 0) {
       for (unsigned int j = i+1; j < cors.n_cols; ++j) {
-        if ( abs(cors(i, j)) > thresh) {
+        if ( pow(cors(i, j),2) >= threshsq) {
           v(j) = 0;
         }
       }
@@ -56,7 +57,7 @@ List splineCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsamp,
     for (double j = 0; j < XSubsamp.n_cols - 1; ++j) {
       for (double k = j + 1; k < XSubsamp.n_cols; ++k) {
         arma::vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
-        
+        //arma::vec inter_temp_rank = Rcpp::as<Rcpp::NumericVector>(Rcpp::wrap(arma::sort_index( inter_temp )+1)) ;
         cor_temp = 0;
         if (arma::stddev(inter_temp)>0 ) {
           cor_temp = abs(as_scalar(arma::cor(ySubsamp, inter_temp)));
@@ -135,7 +136,8 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
         arma::vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         
-          cor_temp = abs(as_scalar(arma::cor(ySubsamp, inter_temp)));
+          cor_temp = as_scalar(arma::cor(ySubsamp, inter_temp));
+          if(cor_temp < 0) cor_temp = -cor_temp;
           if(!arma::is_finite(cor_temp)) cor_temp = 0;
           
         indexCurr(0) = i;
@@ -181,5 +183,5 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
     MConstructDerivative = arma::join_rows(MConstructDerivative, interConstructDerivative);
   }
   
-  return List::create(Named("cors") = indexCurrs, _["Msubamp"] = Msubsamp, _["MConstruct"] = MConstruct, _["MConstructDerivative"] = MConstructDerivative); //returns a highest correlations, matrix M, variable names
+  return List::create(Named("cors") = indexCurrs, _["Msubsamp"] = Msubsamp, _["MConstruct"] = MConstruct, _["MConstructDerivative"] = MConstructDerivative); //returns a highest correlations, matrix M, variable names
 } 
