@@ -60,13 +60,8 @@ bases.obj <- namesAndCorrs(
   a = ceiling(25*(1+n1^.2))
 )
 
-nc1<-ncol(bases.obj$Msubsamp)
-bases.obj$Msubsamp <- bases.obj$Msubsamp[,nc1:1]
-bases.obj$MConstruct <- bases.obj$MConstruct[,nc1:1]
-bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,nc1:1]
 
 cormat <- t(matrix(unlist(bases.obj$cors),nrow=4))
-cormat <- cormat[(nrow(cormat)):1,]
 keeps <- which(as.vector(checkcor(apply(bases.obj$Msubsamp,2,rank), .9))==1)
 
 bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
