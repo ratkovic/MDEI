@@ -5,41 +5,46 @@
 ## B spline functions -----
 ##  Make a bspline matrix from a vector 
 #' @export
-bs.me<-function(x){
-  x <- scale(rank(x))
-  m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
-  # m2<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4),
-  #           bSpline2(-x,df=3),bSpline2(-x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
-  # 
-  return(m2)
-  
+bs.me<-function(x, xvar=TRUE){
+  x <- x-mean(x)
+  m1<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
+  return(m1)
 }
 
 ##  Derivative of bspline from bs.me 
 #' @export
-dbs.me<-function(x){
-  x<-scale(rank(x))
+dbs.me<-function(x, xvar=TRUE){
+  x<-x-mean(x)
   m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4))#,dbs2(x,df=5),dbs2(x,df=6))
-  # m1<-cbind(x,dbs(x,df=3),dbs(x,df=4),
-  #           -dbs(-x,df=3),-dbs(-x,df=4))
   return(m1)
-  
+
 }
 
 ##  Making a single set of bases and derivative
 
 bSpline2<-function(x,df,...){
+  x<-x-mean(x)
   mx <- median(x)
   b1<-bSpline(x,knots=mx,degree=df,...)
-  b2<-bSpline(-x,knots=mx,degree=df,...)
-  cbind(b2[,ncol(b2)],b1)
+  b2<- bSpline(-x,knots=mx,degree=df,...)
+  knots2 <- quantile(x, seq(1:3)/4)
+  b3<-bSpline(x,knots=knots2,degree=df,...)
+  b4<-bSpline(-x,knots=knots2,degree=df,...)
+  cbind(b2[,ncol(b2)],b1,b4[,ncol(b4)],b3)
 }
 
 dbs2<-function(x,df,...){
+  x <- x-mean(x)
+  
   mx <- median(x)
   b1<-dbs(x,knots=mx,degree=df,...)
-  b2<-dbs(-x,knots=mx,degree=df,...)
-  cbind(-b2[,ncol(b2)],b1)
+  b2<- -dbs(-x,knots=mx,degree=df,...)
+  #return(cbind(-b2[,ncol(b2)],b1))
+  
+  knots2 <- quantile(x, seq(1:3)/4)
+  b3<-dbs(x,knots=knots2,degree=df,...)
+  b4<- -dbs(-x,knots=knots2,degree=df,...)
+  cbind(b2[,ncol(b2)],b1,b4[,ncol(b4)],b3)
 }
 
 ## Partial out X
@@ -51,3 +56,168 @@ partialOut <- function(y, X, replaceme){
 
 }
 
+createBases <- function(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau, ratio){
+  
+  n1 <- sum(replaceme==1)
+  bases.obj <- namesAndCorrs(
+    XSubsamp =  Xmat[replaceme==1,],
+    # Xnames = colnames.X,
+    ySubsamp = rank(y.partial[replaceme==1]),
+    treatSubsamp = treatmat.theta[replaceme==1,],
+    XConstruct = Xmat,
+    treatConstruct = treatmat.theta,
+    XConstructDerivative = Xmat,
+    treatConstructDerivative = treatmat.tau,
+    # treatNames = colnames.treat,
+    a = ceiling(ratio*(1+n1^.2))
+  )
+  
+  
+  cormat <- (matrix(unlist(bases.obj$cors),nrow=4))
+  keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .95))==1)
+  bases.obj$cormat <- cormat[,keeps]
+  
+  bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
+  bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
+  bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
+  
+  bases.obj
+  
+}
+
+## Primary fitting function
+fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
+  ## Partial out X's ----
+  y<-y0
+  treat<-treat0
+  X<-X0
+  replaceme<-replaceme0
+  Xmat<-Xmat0
+  
+  y.partial <- partialOut(y, X, replaceme)
+  treat.partial <- partialOut(treat, X, replaceme)
+  treatmat.theta <- cbind(treat.partial,bs.me(treat.partial, xvar=FALSE))
+  treatmat.tau <- cbind(1,dbs.me(treat.partial, xvar=FALSE))
+  
+  keeps <- which(as.vector(checkcor(treatmat.theta, .99)==1))
+  treatmat.theta <- treatmat.theta[,keeps]
+  treatmat.tau <- treatmat.tau[,keeps]
+  
+  colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
+  
+  ## Calculate correlations
+  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=100)
+  repeat.SIS <- F
+  if(repeat.SIS){
+   ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=T, thresh=1e-4)
+  y.partial2 <- y.partial
+  y.partial2[replaceme==1] <- y.partial[replaceme==1]-ste.EM0$fitted.values
+  bases.obj2 <- createBases(replaceme, Xmat, y.partial2, treatmat.theta, treatmat.tau,ratio=50)
+  
+  for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]][,(ste.EM0$coef[-1])!=0],bases.obj2[[i.join]])
+  }
+  
+  ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=F, thresh=1e-4)
+  beta.sp <- ste.EM$coef[1,]
+  # ste.EM <- PLCE:::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp)
+  # ste.EM$coefficients <- matrix(c(ste.EM$intercept, ste.EM$coefficients), nrow=1)
+  # beta.sp <-ste.EM$coef[1,]
+  
+  # keeps <- which(beta.sp[-1]!=0)
+  # bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
+  # bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
+  # bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
+  # 
+  # ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=T)
+  # beta.sp <- ste.EM$coef[1,]
+  
+  
+  te.curr<-cbind(0, bases.obj$MConstructDerivative)%*%(beta.sp)
+  #fits.curr<-cbind(1, bases.obj$Msubsamp)%*%(ste.EM$coef[1,])
+  fits.curr<-cbind(1, bases.obj$MConstruct)%*%(ste.EM$coef[1,])
+  
+  
+  ## Variance calculations ----
+  
+  # Variance of fitted value
+  
+  res.sq <- (y.partial-fits.curr)
+  res.sq <- (res.sq-mean(res.sq[replaceme==1]))^2
+  treat2<-treat
+  var1<-ranger(res.sq~.,data=data.frame(treat2,X),case.weights = 1*(replaceme==1))
+  
+  numvar <- 25
+  var.treatperm <- 0
+  for(i in 1:numvar) {
+    treat2<-sample(treat)
+    var.treatperm <- var.treatperm + predict(var1, data=data.frame(treat2,X))[[1]]/numvar
+  }
+  # var.tau <- abs(var.treatperm[replaceme==2]-var1$predictions[replaceme==2])
+  var.tau <- pmax(var1$predictions[replaceme==2]-var.treatperm[replaceme==2],0)
+  output <- list("theta.pred" = fits.curr[replaceme==2], "tau.pred" = te.curr[replaceme==2],
+                 "var.theta" = var1$predictions[replaceme==2], "var.tau"=var.tau,
+                  "y.partial" = y.partial[replaceme==2]
+                 )
+  
+          
+  return(output)
+}
+
+
+## sparseregTE function
+
+sparseregTE<-function(y,treat,X,nruns=10){
+  n<-length(treat)
+  treatmat <- cbind(treat,bs.me(treat))
+  Xmat<-cbind(1,apply(X,2,rank),matrix(apply(X,2,bs.me),nrow=n))
+  
+  keeps <- which(as.vector(checkcor(apply(Xmat,2,rank), .99))==1)
+  Xmat <- cbind(1,Xmat[,keeps])
+  
+  colnames.X <- paste("X",1:ncol(Xmat),sep="")
+  
+  ## Containers ----
+  
+  # nruns = 10
+  
+  y.partial.run <- theta.run <- tau.run <- thetavar.run <- tauvar.run <- matrix(NA,nrow=n, ncol=nruns )
+  ## Now, start split sample here ----
+  
+  for(i.runs in 1:nruns){
+    replaceme <- rep(1,n)
+    replaceme[1:floor(n/2)] <- 2
+    replaceme <- sample(replaceme)
+    
+    singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat)
+    singlefit.1 <- fit.singlesubsample(y, treat, X, 3-replaceme, Xmat)
+    # 
+    theta.run[replaceme==1,i.runs] <- singlefit.1$theta.pred
+    tau.run[replaceme==1,i.runs] <- singlefit.1$tau.pred
+    thetavar.run[replaceme==1,i.runs] <- singlefit.1$var.theta
+    tauvar.run[replaceme==1,i.runs] <- singlefit.1$var.tau
+    y.partial.run[replaceme==1,i.runs] <- singlefit.1$y.partial
+    
+    theta.run[replaceme==2,i.runs] <- singlefit.2$theta.pred
+    tau.run[replaceme==2,i.runs] <- singlefit.2$tau.pred
+    thetavar.run[replaceme==2,i.runs] <- singlefit.2$var.theta
+    tauvar.run[replaceme==2,i.runs] <- singlefit.2$var.tau
+    y.partial.run[replaceme==2,i.runs] <- singlefit.2$y.partial
+    
+  }
+  
+  se.theta <- (rowMeans(thetavar.run)+apply(theta.run,2,var))^.5
+  ts.theta <- (y.partial.run-theta.run)/se.theta
+  critical.value.theta <- quantile(abs(ts.theta),.9)
+  
+  CIs.theta <- rowMeans(y.partial.run)+critical.value.theta*cbind(-se.theta, se.theta)
+  
+  se.tau <-(rowMeans(tauvar.run)+apply(tau.run,2,var))^.5
+  critical.value.tau <- (critical.value.theta^2+1)^.5
+  CIs.tau <- rowMeans(tau.run)+critical.value.tau*cbind(-se.tau, se.tau)
+  
+  output <- list("tau.est"=rowMeans(tau.run),"CIs.tau"=CIs.tau,"theta.est"=rowMeans(theta.run),
+                 "CIs.theta"=CIs.theta,
+                 "critical.values" = list("theta"=critical.value.theta, "tau"=critical.value.tau)
+  )
+  return(output)
+}

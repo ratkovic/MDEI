@@ -1,9 +1,11 @@
 library(splines2)
 library(ranger)
 library(microbenchmark)
+library(sparsereg)
+library(tictoc)
 if(F){
   Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/splinesinter_short.cpp')
-  Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
+  #Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
   source('~/Dropbox/Github/warmup/NithinPackage/R/sparseregTE_auxiliary.R')
   n<-1000
   p<-5
@@ -13,9 +15,9 @@ if(F){
   X<- apply(X,2,scale)
   colnames(X) <- paste("X",1:ncol(X),sep="_")
   treat<- rnorm(n)
-  
-  y <- treat^2 + X[,3]+rnorm(n)
-  tau.true = 2*treat# +X[,2]
+  theta.true <- sign(X[,1]+X[,2]) * (treat)#treat^2*X[,2]^2#+treat
+  y <-theta.true + X[,3]+rnorm(n)*abs(X[,3])
+  tau.true = sign(X[,1]+X[,2]) #0*treat#2*treat*X[,2]^2#treat*2*X[,2]+1# +X[,2]
 
   
   }
@@ -23,63 +25,32 @@ if(F){
 
 
 ## First, turn covariates and treatment into spline bases, save these ----
-n<-length(treat)
-treatmat <- bs.me(treat)
-Xmat<-cbind(1,matrix(apply(X,2,bs.me),nrow=n))
+tic()
+sp1<-sparseregTE(y,treat,X,nruns=10)
+toc()
+
+table(sign(apply(sp1$CIs.theta-theta.true,1,prod)))
+table(sign(apply(sp1$CIs.tau-tau.true,1,prod)))
 
 
-colnames.X <- paste("X",1:ncol(Xmat),sep="")
 
-## Now, start split sample here ----
-
-replaceme <- rep(1,n)
-replaceme[1:floor(n/2)] <- 2
-replaceme <- sample(replaceme)
-
-## Partial out X's ----
-
-y.partial <- partialOut(y, X, replaceme)
-treat.partial <- partialOut(treat, X, replaceme)
-treatmat.theta <- bs.me(treat.partial)
-treatmat.tau <- dbs.me(treat.partial)
-colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
-
-## Calculate correlations
-
-n1 <- sum(replaceme==1)
-bases.obj <- namesAndCorrs(
-  XSubsamp =  Xmat[replaceme==1,],
-  # Xnames = colnames.X,
-  ySubsamp = rank(y.partial[replaceme==1]),
-  treatSubsamp = treatmat.theta[replaceme==1,],
-  XConstruct = Xmat[replaceme==2,],
-  treatConstruct = treatmat.theta[replaceme==2,],
-  XConstructDerivative = Xmat[replaceme==2,],
-  treatConstructDerivative = treatmat.tau[replaceme==2,],
-  # treatNames = colnames.treat,
-  a = ceiling(25*(1+n1^.2))
-)
+plot(treat,0*treat,type="l",ylim=range(sp1$CIs.tau))
+segments(x0=treat,y0=sp1$CIs.tau[,1]-tau.true,y1=sp1$CIs.tau[,2]-tau.true,col=gray(.75))
+points(treat,sp1$tau.est-tau.true, pch=19)
 
 
-cormat <- t(matrix(unlist(bases.obj$cors),nrow=4))
-keeps <- which(as.vector(checkcor(apply(bases.obj$Msubsamp,2,rank), .9))==1)
-
-bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
-bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
-bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
 
 
-sp1<- sparsereg::sparsereg(y.partial[replaceme==1]+mean(y[replaceme==1]),bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0)
+################
 
-
-beta.try <- sp1$coef[1,]
-plot(treat[replaceme==1],sp1$fitted)
+plot(treat[replaceme==1],ste.EM$fitted+mean(y))
 treat.seq <- seq(min(treat),max(treat),length=1000)
 lines(treat.seq,treat.seq^2)
 
-cor(cbind(0,bases.obj$MConstructDerivative)%*%beta.try,tau.true[replaceme==2])
+cor(cbind(0,bases.obj$MConstructDerivative[replaceme==2,])%*%beta.sp,tau.true[replaceme==2])
 
-plot(treat,treat*2,type="l")
-points(treat[replaceme==2],cbind(0,bases.obj$MConstructDerivative)%*%beta.try)
+tau.est<-cbind(0,bases.obj$MConstructDerivative[replaceme==2,])%*%beta.sp
+plot(treat,treat*2,type="l",ylim=range(tau.est))
+points(treat[replaceme==2],tau.est)
 lines(treat.seq,2*treat.seq)
 
