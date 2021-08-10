@@ -7,6 +7,10 @@
 #' @export
 bs.me<-function(x, xvar=TRUE){
   x <- x-mean(x)
+  if(length(unique(x)) <= 2) return(as.matrix(x))
+  if(length(unique(x)) <= 3) return(as.matrix(cbind(x,x^2)))
+  if(length(unique(x)) <= 4) return(as.matrix(cbind(x,x^2,x^3)))
+  
   m1<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
   return(m1)
 }
@@ -15,6 +19,8 @@ bs.me<-function(x, xvar=TRUE){
 #' @export
 dbs.me<-function(x, xvar=TRUE){
   x<-x-mean(x)
+  if(length(unique(x)) <= 2) return(x)
+  if(length(unique(x)) <= 3) return(cbind(x,x^2))
   m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4))#,dbs2(x,df=5),dbs2(x,df=6))
   return(m1)
 
@@ -95,6 +101,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
   Xmat<-Xmat0
   
   y.partial <- partialOut(y, X, replaceme)
+  Ey.x <- y-y.partial
   treat.partial <- partialOut(treat, X, replaceme)
   treatmat.theta <- cbind(treat.partial,bs.me(treat.partial, xvar=FALSE))
   treatmat.tau <- cbind(1,dbs.me(treat.partial, xvar=FALSE))
@@ -153,10 +160,11 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
     var.treatperm <- var.treatperm + predict(var1, data=data.frame(treat2,X))[[1]]/numvar
   }
   # var.tau <- abs(var.treatperm[replaceme==2]-var1$predictions[replaceme==2])
-  var.tau <- pmax(var1$predictions[replaceme==2]-var.treatperm[replaceme==2],0)
+  var.tau <- pmax(var.treatperm[replaceme==2]-var1$predictions[replaceme==2],0)
   output <- list("theta.pred" = fits.curr[replaceme==2], "tau.pred" = te.curr[replaceme==2],
                  "var.theta" = var1$predictions[replaceme==2], "var.tau"=var.tau,
-                  "y.partial" = y.partial[replaceme==2]
+                  "y.partial" = y.partial[replaceme==2], 
+                 "Ey.x" = Ey.x[replaceme==2]
                  )
   
           
@@ -169,8 +177,18 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
 sparseregTE<-function(y,treat,X,nruns=10){
   n<-length(treat)
   treatmat <- cbind(treat,bs.me(treat))
-  Xmat<-cbind(1,apply(X,2,rank),matrix(apply(X,2,bs.me),nrow=n))
+  #Xmat<-cbind(1,apply(X,2,rank),matrix(apply(X,2,bs.me),nrow=n))
   
+  Xmat.spline <- matrix(NA,nrow=n,ncol = ncol(X)*ncol(bs.me(rnorm(20)))+10 )
+  for(i.X in 1:ncol(X)){
+    col.start <- which(is.na(Xmat.spline[1,]))[1]
+    bmat <- bs.me(X[,i.X])
+    col.stop <- ncol(bmat)+col.start-1
+    Xmat.spline[,col.start:col.stop]<-bmat
+    }
+  
+  Xmat.spline <- Xmat.spline[,is.finite(Xmat.spline[1,])]
+  Xmat <- cbind(1,X,Xmat.spline)
   keeps <- which(as.vector(checkcor(apply(Xmat,2,rank), .99))==1)
   Xmat <- cbind(1,Xmat[,keeps])
   
@@ -178,9 +196,7 @@ sparseregTE<-function(y,treat,X,nruns=10){
   
   ## Containers ----
   
-  # nruns = 10
-  
-  y.partial.run <- theta.run <- tau.run <- thetavar.run <- tauvar.run <- matrix(NA,nrow=n, ncol=nruns )
+  Ey.x.run <- y.partial.run <- theta.run <- tau.run <- thetavar.run <- tauvar.run <- matrix(NA,nrow=n, ncol=nruns )
   ## Now, start split sample here ----
   
   for(i.runs in 1:nruns){
@@ -196,22 +212,25 @@ sparseregTE<-function(y,treat,X,nruns=10){
     thetavar.run[replaceme==1,i.runs] <- singlefit.1$var.theta
     tauvar.run[replaceme==1,i.runs] <- singlefit.1$var.tau
     y.partial.run[replaceme==1,i.runs] <- singlefit.1$y.partial
+    Ey.x.run[replaceme==1,i.runs] <- singlefit.1$Ey.x
     
     theta.run[replaceme==2,i.runs] <- singlefit.2$theta.pred
     tau.run[replaceme==2,i.runs] <- singlefit.2$tau.pred
     thetavar.run[replaceme==2,i.runs] <- singlefit.2$var.theta
     tauvar.run[replaceme==2,i.runs] <- singlefit.2$var.tau
     y.partial.run[replaceme==2,i.runs] <- singlefit.2$y.partial
+    Ey.x.run[replaceme==2, i.runs] <- singlefit.2$Ey.x
+    
     
   }
   
-  se.theta <- (rowMeans(thetavar.run)+apply(theta.run,2,var))^.5
+  se.theta <- (rowMeans(thetavar.run)+apply(theta.run,1,var))^.5
   ts.theta <- (y.partial.run-theta.run)/se.theta
   critical.value.theta <- quantile(abs(ts.theta),.9)
   
   CIs.theta <- rowMeans(y.partial.run)+critical.value.theta*cbind(-se.theta, se.theta)
   
-  se.tau <-(rowMeans(tauvar.run)+apply(tau.run,2,var))^.5
+  se.tau <-(rowMeans(tauvar.run)+apply(tau.run,1,var))^.5
   critical.value.tau <- (critical.value.theta^2+1)^.5
   CIs.tau <- rowMeans(tau.run)+critical.value.tau*cbind(-se.tau, se.tau)
   
