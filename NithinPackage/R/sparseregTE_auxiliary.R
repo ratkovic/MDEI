@@ -113,7 +113,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
   colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
   
   ## Calculate correlations
-  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=200)
+  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=100)
   repeat.SIS <- F
   if(repeat.SIS){
    ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, alpha.prior="balanced", use.sparseregweights=T, thresh=1e-4)
@@ -134,21 +134,10 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
   alpha.seq <-seq(max(n.a*log(p.a),10*p.a), p.a, length=10)
   g1 <- GCV(y.partial[replaceme==1],cbind(1,bases.obj$Msubsamp), alphas=alpha.seq,tol=1e-2)
   beta.sp <- as.vector(g1$beta)
-  #beta.sp[abs(beta.sp)<1e-2] <- 0
-    
-  # keeps <- which(beta.sp[-1]!=0)
-   #bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
-   #bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
-   #bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
-  # 
-   #ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=T)
-   #beta.sp <- ste.EM$coef[1,]
   
   
   te.curr<-cbind(0, bases.obj$MConstructDerivative)%*%beta.sp
-  #fits.curr<-cbind(1, bases.obj$Msubsamp)%*%(ste.EM$coef[1,])
-  fits.curr<-cbind(1, bases.obj$MConstruct)%*%beta.sp#ste.EM$coef[1,])
-  
+  fits.curr<-cbind(1, bases.obj$MConstruct)%*%beta.sp
   
   ## Variance calculations ----
   
