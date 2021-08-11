@@ -26,7 +26,7 @@ if(F){
 
 ## First, turn covariates and treatment into spline bases, save these ----
 tic()
-sp1<-sparseregTE(y,treat,X,splits=10)
+sp1<-sparseregTE(y,treat,X,splits=50)
 toc()
 
 table(sign(apply(sp1$CIs.theta-theta.true,1,prod)))

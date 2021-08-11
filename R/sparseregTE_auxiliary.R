@@ -53,6 +53,19 @@ dbs2<-function(x,df,...){
   cbind(b2[,ncol(b2)],b1,b4[,ncol(b4)],b3)
 }
 
+## Hodges Lehmann mean
+
+hl.mean <-function (x) 
+{
+  x <- x[!is.na(x)]
+  diff1 <- as.vector(outer(x, x, "+")/2)
+  median(c(diff1, x))
+}
+
+hl.var <-function (x) {
+  hl.mean(x^2)-(hl.mean(x))^2
+}
+
 ## Partial out X
 partialOut <- function(y, X, replaceme){
   mod1 <- ranger(y~., data=data.frame(X), case.weights = 1*(replaceme==1), num.trees=1000,
@@ -81,6 +94,9 @@ createBases <- function(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau
   
   cormat <- (matrix(unlist(bases.obj$cors),nrow=4))
   keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .9))==1)
+  if(length(keeps)<5)   keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .95))==1)
+  if(length(keeps)<5)   keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .99))==1)
+  
   bases.obj$cormat <- cormat[,keeps]
   
   bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
@@ -113,13 +129,13 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
   colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
   
   ## Calculate correlations
-  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=100)
+  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=50)
   repeat.SIS <- F
   if(repeat.SIS){
    ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, alpha.prior="balanced", use.sparseregweights=T, thresh=1e-4)
   y.partial2 <- y.partial
   y.partial2[replaceme==1] <- y.partial[replaceme==1]-ste.EM0$fitted.values
-  bases.obj2 <- createBases(replaceme, Xmat, y.partial2, treatmat.theta, treatmat.tau,ratio=50)
+  bases.obj2 <- createBases(replaceme, Xmat, y.partial2, treatmat.theta, treatmat.tau,ratio=200)
   
   # for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]][,(ste.EM0$coef[-1])!=0],bases.obj2[[i.join]])
   for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]], bases.obj2[[i.join]])
@@ -131,6 +147,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
 
   n.a <-sum(replaceme==1)
   p.a <-ncol(bases.obj$Msubsamp)
+  
+  # m1 <- mget(ls())
+  # save(file="diagnose.rda",m1)
   alpha.seq <-seq(max(n.a*log(p.a),10*p.a), p.a, length=10)
   g1 <- GCV(y.partial[replaceme==1],cbind(1,bases.obj$Msubsamp), alphas=alpha.seq,tol=1e-2)
   beta.sp <- as.vector(g1$beta)
@@ -219,17 +238,19 @@ sparseregTE<-function(y,treat,X, splits=10, alpha = .9){
     
   }
   
-  se.theta <- (rowMeans(thetavar.run)+apply(theta.run,1,var))^.5
+  se.theta <- (apply(thetavar.run,1,hl.mean)+apply(theta.run,1,hl.var))^.5
   ts.theta <- (y.partial.run-theta.run)/se.theta
   critical.value.theta <- quantile(abs(ts.theta),alpha)
   
-  CIs.theta <- rowMeans(y.partial.run)+critical.value.theta*cbind(-se.theta, se.theta)
+  CIs.theta <- apply(y.partial.run,1,hl.mean)+critical.value.theta*cbind(-se.theta, se.theta)
   
-  se.tau <-(rowMeans(tauvar.run)+apply(tau.run,1,var))^.5
+  se.tau <-(apply(tauvar.run,1,hl.mean)+apply(tau.run,1,hl.var))^.5
   critical.value.tau <- (critical.value.theta^2+1)^.5
   CIs.tau <- rowMeans(tau.run)+critical.value.tau*cbind(-se.tau, se.tau)
   
-  output <- list("tau.est"=rowMeans(tau.run),"CIs.tau"=CIs.tau,"theta.est"=rowMeans(theta.run),
+  output <- list("tau.est"=apply(tau.run,1,hl.mean),
+                 "CIs.tau"=CIs.tau,
+                 "theta.est"=apply(theta.run,1,hl.mean),
                  "CIs.theta"=CIs.theta,
                  "critical.values" = list("theta"=critical.value.theta, "tau"=critical.value.tau),
                  "Ey.x"=rowMeans(Ey.x.run)
