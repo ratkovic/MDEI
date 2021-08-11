@@ -100,13 +100,13 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
     int k = indexCurr(2);
     arma::vec interSubsamp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k);
     sd_adjust = stddev(interSubsamp);
-    interSubsamp = (interSubsamp - mean(interSubsamp));// / sd_adjust;
+    interSubsamp = (interSubsamp - mean(interSubsamp)) / sd_adjust;
     
     arma::vec interConstruct = treatConstruct.col(i) % XConstruct.col(j) % XConstruct.col(k);
-    interConstruct = (interConstruct-mean(interSubsamp));// / sd_adjust;
+    interConstruct = (interConstruct-mean(interSubsamp)) / sd_adjust;
     
     arma::vec interConstructDerivative = treatConstructDerivative.col(i) % XConstructDerivative.col(j) % XConstructDerivative.col(k);
-    interConstructDerivative = interConstructDerivative;// / sd_adjust;
+    interConstructDerivative = interConstructDerivative / sd_adjust;
     
     Msubsamp = arma::join_rows(Msubsamp, interSubsamp);
     MConstruct = arma::join_rows(MConstruct, interConstruct);

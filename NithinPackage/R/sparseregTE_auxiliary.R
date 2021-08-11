@@ -11,7 +11,7 @@ bs.me<-function(x, xvar=TRUE){
   if(length(unique(x)) <= 3) return(as.matrix(cbind(x,x^2)))
   if(length(unique(x)) <= 4) return(as.matrix(cbind(x,x^2,x^3)))
   
-  m1<-cbind(x,bSpline2(x,df=3),bSpline2(x,df=4))#,bSpline2(x,df=5),bSpline2(x,df=6))
+  m1<-cbind(x,bSpline2(x,df=3))#,bSpline2(x,df=4),bSpline2(x,df=5),bSpline2(x,df=6))
   return(m1)
 }
 
@@ -21,7 +21,7 @@ dbs.me<-function(x, xvar=TRUE){
   x<-x-mean(x)
   if(length(unique(x)) <= 2) return(x)
   if(length(unique(x)) <= 3) return(cbind(x,x^2))
-  m1<-cbind(1,dbs2(x,df=3),dbs2(x,df=4))#,dbs2(x,df=5),dbs2(x,df=6))
+  m1<-cbind(1,dbs2(x,df=3))#,dbs2(x,df=4),dbs2(x,df=5),dbs2(x,df=6))
   return(m1)
 
 }
@@ -80,7 +80,7 @@ createBases <- function(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau
   
   
   cormat <- (matrix(unlist(bases.obj$cors),nrow=4))
-  keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .95))==1)
+  keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .9))==1)
   bases.obj$cormat <- cormat[,keeps]
   
   bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
@@ -106,42 +106,48 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
   treatmat.theta <- cbind(treat.partial,bs.me(treat.partial, xvar=FALSE))
   treatmat.tau <- cbind(1,dbs.me(treat.partial, xvar=FALSE))
   
-  keeps <- which(as.vector(checkcor(treatmat.theta, .99)==1))
+  keeps <- which(as.vector(checkcor(treatmat.theta, .9)==1))
   treatmat.theta <- treatmat.theta[,keeps]
   treatmat.tau <- treatmat.tau[,keeps]
   
   colnames.treat <- paste("treat",1:ncol(treatmat.theta),sep="")
   
   ## Calculate correlations
-  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=100)
+  bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=200)
   repeat.SIS <- F
   if(repeat.SIS){
-   ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=T, thresh=1e-4)
+   ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, alpha.prior="balanced", use.sparseregweights=T, thresh=1e-4)
   y.partial2 <- y.partial
   y.partial2[replaceme==1] <- y.partial[replaceme==1]-ste.EM0$fitted.values
   bases.obj2 <- createBases(replaceme, Xmat, y.partial2, treatmat.theta, treatmat.tau,ratio=50)
   
-  for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]][,(ste.EM0$coef[-1])!=0],bases.obj2[[i.join]])
+  # for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]][,(ste.EM0$coef[-1])!=0],bases.obj2[[i.join]])
+  for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]], bases.obj2[[i.join]])
+  
   }
   
-  ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=F, thresh=1e-4)
-  beta.sp <- ste.EM$coef[1,]
-  # ste.EM <- PLCE:::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp)
-  # ste.EM$coefficients <- matrix(c(ste.EM$intercept, ste.EM$coefficients), nrow=1)
-  # beta.sp <-ste.EM$coef[1,]
-  
+  #ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=F, thresh=1e-4)
+  #beta.sp <- ste.EM$coef[1,]
+
+  n.a <-sum(replaceme==1)
+  p.a <-ncol(bases.obj$Msubsamp)
+  alpha.seq <-seq(max(n.a*log(p.a),10*p.a), p.a, length=10)
+  g1 <- GCV(y.partial[replaceme==1],cbind(1,bases.obj$Msubsamp), alphas=alpha.seq,tol=1e-2)
+  beta.sp <- as.vector(g1$beta)
+  #beta.sp[abs(beta.sp)<1e-2] <- 0
+    
   # keeps <- which(beta.sp[-1]!=0)
-  # bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
-  # bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
-  # bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
+   #bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps]
+   #bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps]
+   #bases.obj$MConstruct <- bases.obj$MConstruct[,keeps]
   # 
-  # ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=T)
-  # beta.sp <- ste.EM$coef[1,]
+   #ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=T)
+   #beta.sp <- ste.EM$coef[1,]
   
   
-  te.curr<-cbind(0, bases.obj$MConstructDerivative)%*%(beta.sp)
+  te.curr<-cbind(0, bases.obj$MConstructDerivative)%*%beta.sp
   #fits.curr<-cbind(1, bases.obj$Msubsamp)%*%(ste.EM$coef[1,])
-  fits.curr<-cbind(1, bases.obj$MConstruct)%*%(ste.EM$coef[1,])
+  fits.curr<-cbind(1, bases.obj$MConstruct)%*%beta.sp#ste.EM$coef[1,])
   
   
   ## Variance calculations ----
@@ -174,7 +180,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
 
 ## sparseregTE function
 
-sparseregTE<-function(y,treat,X,nruns=10){
+sparseregTE<-function(y,treat,X, splits=10, alpha = .9){
   n<-length(treat)
   treatmat <- cbind(treat,bs.me(treat))
   #Xmat<-cbind(1,apply(X,2,rank),matrix(apply(X,2,bs.me),nrow=n))
@@ -189,17 +195,17 @@ sparseregTE<-function(y,treat,X,nruns=10){
   
   Xmat.spline <- Xmat.spline[,is.finite(Xmat.spline[1,])]
   Xmat <- cbind(1,X,Xmat.spline)
-  keeps <- which(as.vector(checkcor(apply(Xmat,2,rank), .99))==1)
+  keeps <- which(as.vector(checkcor(Xmat, .9))==1)
   Xmat <- cbind(1,Xmat[,keeps])
   
   colnames.X <- paste("X",1:ncol(Xmat),sep="")
   
   ## Containers ----
   
-  Ey.x.run <- y.partial.run <- theta.run <- tau.run <- thetavar.run <- tauvar.run <- matrix(NA,nrow=n, ncol=nruns )
+  Ey.x.run <- y.partial.run <- theta.run <- tau.run <- thetavar.run <- tauvar.run <- matrix(NA,nrow=n, ncol=splits )
   ## Now, start split sample here ----
   
-  for(i.runs in 1:nruns){
+  for(i.runs in 1:splits){
     replaceme <- rep(1,n)
     replaceme[1:floor(n/2)] <- 2
     replaceme <- sample(replaceme)
@@ -226,7 +232,7 @@ sparseregTE<-function(y,treat,X,nruns=10){
   
   se.theta <- (rowMeans(thetavar.run)+apply(theta.run,1,var))^.5
   ts.theta <- (y.partial.run-theta.run)/se.theta
-  critical.value.theta <- quantile(abs(ts.theta),.9)
+  critical.value.theta <- quantile(abs(ts.theta),alpha)
   
   CIs.theta <- rowMeans(y.partial.run)+critical.value.theta*cbind(-se.theta, se.theta)
   
@@ -236,7 +242,8 @@ sparseregTE<-function(y,treat,X,nruns=10){
   
   output <- list("tau.est"=rowMeans(tau.run),"CIs.tau"=CIs.tau,"theta.est"=rowMeans(theta.run),
                  "CIs.theta"=CIs.theta,
-                 "critical.values" = list("theta"=critical.value.theta, "tau"=critical.value.tau)
+                 "critical.values" = list("theta"=critical.value.theta, "tau"=critical.value.tau),
+                 "Ey.x"=rowMeans(Ey.x.run)
   )
   return(output)
 }

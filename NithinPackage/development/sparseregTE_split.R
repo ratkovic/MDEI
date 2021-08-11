@@ -5,7 +5,7 @@ library(sparsereg)
 library(tictoc)
 if(F){
   Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/splinesinter_short.cpp')
-  #Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
+  Rcpp::sourceCpp('~/Dropbox/Github/warmup/NithinPackage/src/bayesLassoRevised.cpp')
   source('~/Dropbox/Github/warmup/NithinPackage/R/sparseregTE_auxiliary.R')
   n<-1000
   p<-5
@@ -26,7 +26,7 @@ if(F){
 
 ## First, turn covariates and treatment into spline bases, save these ----
 tic()
-sp1<-sparseregTE(y,treat,X,nruns=200)
+sp1<-sparseregTE(y,treat,X,splits=10)
 toc()
 
 table(sign(apply(sp1$CIs.theta-theta.true,1,prod)))
