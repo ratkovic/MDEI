@@ -129,17 +129,17 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
   
   ## Calculate correlations
   bases.obj <- createBases(replaceme, Xmat, y.partial, treatmat.theta, treatmat.tau,ratio=50)
-  repeat.SIS <- F
-  if(repeat.SIS){
-   ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, alpha.prior="balanced", use.sparseregweights=T, thresh=1e-4)
-  y.partial2 <- y.partial
-  y.partial2[replaceme==1] <- y.partial[replaceme==1]-ste.EM0$fitted.values
-  bases.obj2 <- createBases(replaceme, Xmat, y.partial2, treatmat.theta, treatmat.tau,ratio=200)
-  
-  # for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]][,(ste.EM0$coef[-1])!=0],bases.obj2[[i.join]])
-  for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]], bases.obj2[[i.join]])
-  
-  }
+  # repeat.SIS <- F
+  # if(repeat.SIS){
+  #  ste.EM0 <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, alpha.prior="balanced", use.sparseregweights=T, thresh=1e-4)
+  # y.partial2 <- y.partial
+  # y.partial2[replaceme==1] <- y.partial[replaceme==1]-ste.EM0$fitted.values
+  # bases.obj2 <- createBases(replaceme, Xmat, y.partial2, treatmat.theta, treatmat.tau,ratio=200)
+  # 
+  # # for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]][,(ste.EM0$coef[-1])!=0],bases.obj2[[i.join]])
+  # for(i.join in 2:4) bases.obj[[i.join]] <- cbind(bases.obj[[i.join]], bases.obj2[[i.join]])
+  # 
+  # }
   
   #ste.EM <- sparsereg::sparsereg(y.partial[replaceme==1],bases.obj$Msubsamp,EM=T, verbose=F, iter.initialize=0, use.sparseregweights=F, thresh=1e-4)
   #beta.sp <- ste.EM$coef[1,]
