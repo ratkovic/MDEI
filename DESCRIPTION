@@ -1,13 +1,14 @@
 Package: MDEI
 Type: Package
-Title: What the package does (short line)
+Title: Implementing the Method of Direct Estimation and Inference.
 Version: 1.0
 Date: 2021-06-08
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one
-      line)
-License: What license is it under?
+Author: Marc Ratkovic <ratkovic@princeton.edu> [aut, cre]
+Nithin Kavi <nithinkavi@college.harvard.edu> [aut]
+Maintainer: Marc Ratkovic <ratkovic@princeton.edu>
+Description: Implementing the Method of Direct Estimation and Inference.  Returns the slope of the treatment variable at each point.
+License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.6)
+Depends: R (>= 3.5.0)
 LinkingTo: Rcpp, RcppArmadillo, splines2, ranger
 RoxygenNote: 7.1.1

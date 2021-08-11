@@ -15,7 +15,6 @@ bs.me<-function(x, xvar=TRUE){
 }
 
 ##  Derivative of bspline from bs.me 
-#' @export
 dbs.me<-function(x, xvar=TRUE){
   x<-x-mean(x)
   if(length(unique(x)) <= 2) return(x)
@@ -185,7 +184,14 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
 }
 
 
-## MDEI function
+#' MDEI function
+#' 
+#' Implements the Method of Direct Estimation and Inference
+#' @param y The outcome variable, a vector.
+#' @param treat The treatment variable, a vector.
+#' @param X A matrix of covariates.
+#' @param splits Number of repeated cross-fitting steps to implement.
+#' @param alpha The desired level of the confidence band.
 #' @export
 
 
