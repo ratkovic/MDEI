@@ -4,7 +4,6 @@
 
 ## B spline functions -----
 ##  Make a bspline matrix from a vector 
-#' @export
 bs.me<-function(x, xvar=TRUE){
   x <- x-mean(x)
   if(length(unique(x)) <= 2) return(as.matrix(x))
@@ -186,9 +185,11 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
 }
 
 
-## sparseregTE function
+## MDEI function
+#' @export
 
-sparseregTE<-function(y,treat,X, splits=10, alpha = .9){
+
+MDEI<-function(y,treat,X, splits=10, alpha = .9){
   n<-length(treat)
   treatmat <- cbind(treat,bs.me(treat))
   #Xmat<-cbind(1,apply(X,2,rank),matrix(apply(X,2,bs.me),nrow=n))

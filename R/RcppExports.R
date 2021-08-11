@@ -10,50 +10,26 @@
 NULL
 
 bayesLasso <- function(y, X, alpha, tol) {
-    .Call(`_NithinPackage_bayesLasso`, y, X, alpha, tol)
+    .Call('_MDEI_bayesLasso', PACKAGE = 'MDEI', y, X, alpha, tol)
 }
 
 setupGCV <- function(y, X, alphas) {
-    .Call(`_NithinPackage_setupGCV`, y, X, alphas)
+    .Call('_MDEI_setupGCV', PACKAGE = 'MDEI', y, X, alphas)
 }
 
 update <- function(L, tol) {
-    .Call(`_NithinPackage_update`, L, tol)
+    .Call('_MDEI_update', PACKAGE = 'MDEI', L, tol)
 }
 
 GCV <- function(y, X, alphas, tol) {
-    .Call(`_NithinPackage_GCV`, y, X, alphas, tol)
+    .Call('_MDEI_GCV', PACKAGE = 'MDEI', y, X, alphas, tol)
 }
 
-#' Check Spearman correlations between interactions in X and treatment
-#' 
-#' @param y A vector of outcomes.
-#' @param X A matrix of spline bases.
-#' @param alpha.schedule The prior on lambda
-#' @export
-NULL
-
-myrank <- function(x) {
-    .Call(`_NithinPackage_myrank`, x)
+checkcor <- function(X, thresh) {
+    .Call('_MDEI_checkcor', PACKAGE = 'MDEI', X, thresh)
 }
 
-checkcor <- function(cors, thresh) {
-    .Call(`_NithinPackage_checkcor`, cors, thresh)
-}
-
-subSamp <- function(v) {
-    .Call(`_NithinPackage_subSamp`, v)
-}
-
-namesAndCorrs <- function(XSubsamp, Xnames, ySubsamp, colSizes, treatSubsamp, XConstruct, treatConstruct, treatNames, a) {
-    .Call(`_NithinPackage_namesAndCorrs`, XSubsamp, Xnames, ySubsamp, colSizes, treatSubsamp, XConstruct, treatConstruct, treatNames, a)
-}
-
-checkcor <- function(cors, thresh) {
-    .Call(`_NithinPackage_checkcor`, cors, thresh)
-}
-
-splineCorrs <- function(XSubsamp, ySubsamp, treatSubsamp, XConstruct, treatConstruct, a) {
-    .Call(`_NithinPackage_splineCorrs`, XSubsamp, ySubsamp, treatSubsamp, XConstruct, treatConstruct, a)
+namesAndCorrs <- function(XSubsamp, ySubsamp, treatSubsamp, XConstruct, treatConstruct, XConstructDerivative, treatConstructDerivative, a) {
+    .Call('_MDEI_namesAndCorrs', PACKAGE = 'MDEI', XSubsamp, ySubsamp, treatSubsamp, XConstruct, treatConstruct, XConstructDerivative, treatConstructDerivative, a)
 }
 
