@@ -2,3 +2,6 @@
 
 export()
 export(MDEI)
+import(stats)
+importFrom(Rcpp,sourceCpp)
+useDynLib(MDEI)

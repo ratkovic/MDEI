@@ -1,6 +1,6 @@
 Package: MDEI
 Type: Package
-Title: Implementing the Method of Direct Estimation and Inference.
+Title: Implementing the Method of Direct Estimation and Inference
 Version: 1.0
 Date: 2021-06-08
 Author: Marc Ratkovic <ratkovic@princeton.edu> [aut, cre]
