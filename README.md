@@ -4,3 +4,10 @@
 
 # MDEI
 The Method of Direct Estimation and Inference.
+
+# Installation #
+
+```r
+# To Install
+devtools::install_github("ratkovic/MDEI")
+```
