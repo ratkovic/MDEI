@@ -194,7 +194,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0){
 #' @param alpha The desired level of the confidence band.
 #' @export
 #' 
-#' @example 
+#' @examples
 #' n<-200
 #' 
 #' X <- matrix(rnorm(n*3), nrow = n)

@@ -20,3 +20,20 @@ MDEI(y, treat, X, splits = 10, alpha = 0.9)
 \description{
 Implements the Method of Direct Estimation and Inference
 }
+\examples{
+n<-200
+
+X <- matrix(rnorm(n*3), nrow = n)
+treat <- rnorm(n)
+y <- treat^2 + X[,2] + rnorm(n)
+
+set.seed(1)
+m1 <- MDEI(y, treat, X, splits=5, alpha=.9)
+
+# Accuracy
+cor(m1$tau.est, treat*2)
+cor(m1$theta.est, treat^2)
+
+# Coverage
+mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
+}
