@@ -1,6 +1,6 @@
 library(MDEI)
 library(tictoc)
-n <- 10000
+n <- 1000
 
 X <- matrix(rnorm(n*5), nrow = n)
 treat <- rnorm(n)+X[,2]
@@ -8,6 +8,8 @@ treat <- rnorm(n)+X[,2]
 theta.true <- treat^2
 theta.true <- theta.true - mean(theta.true)
 tau.true <- 2*treat
+Ey.x.true <- X[,1]^2+X[,1]
+Ey.x.true <- Ey.x.true - mean(Ey.x.true)
 
 y <- theta.true + X[,2] + rnorm(n)
 
