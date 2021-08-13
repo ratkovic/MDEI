@@ -1,4 +1,6 @@
-library(MDEI)
+#library(MDEI)
+
+devtools::load_all("~/Dropbox/Github/MDEI")
 library(tictoc)
 n <- 1000
 
@@ -17,6 +19,10 @@ set.seed(1)
 tic()
 m1 <- MDEI(y, treat, X, splits=10, alpha=.9)
 toc()
+
+coefs <- m1$coefficients
+sort(tapply(coefs[4,],colnames(coefs), sum), dec=T)[1:5]/20
+
 
 cor(m1$tau.est, tau.true)
 cor(m1$theta.est, theta.true)
