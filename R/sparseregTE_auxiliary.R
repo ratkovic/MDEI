@@ -267,8 +267,6 @@ MDEI <- function(y,
                  splits = 10,
                  alpha = .9) {
   n <- length(treat)
-  treatmat <- bs.me(treat, "treatment")
-
   X <- apply(X, 2, rank)
   if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
   

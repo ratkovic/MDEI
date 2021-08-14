@@ -5,7 +5,7 @@ library(tictoc)
 n <- 1000
 
 X <- matrix(rnorm(n*5), nrow = n)
-treat <- rnorm(n)+X[,2]
+treat <- rnorm(n)
 
 theta.true <- treat^2
 theta.true <- theta.true - mean(theta.true)
@@ -15,13 +15,10 @@ Ey.x.true <- Ey.x.true - mean(Ey.x.true)
 
 y <- theta.true + X[,2] + rnorm(n)
 
-set.seed(1)
+set.seed(100)
 tic()
-m1 <- MDEI(y, treat, X, splits=10, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=50, alpha=.9)
 toc()
-
-coefs <- m1$coefficients
-sort(tapply(coefs[4,],colnames(coefs), sum), dec=T)[1:5]/20
 
 
 cor(m1$tau.est, tau.true)
