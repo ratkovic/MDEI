@@ -176,11 +176,14 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         tol = 1e-2)
   beta.sp <- as.vector(g1$beta)
   
+  m1 <- mget(ls())
+  save(m1, file="diagnose.Rda")
+  
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
-  cormat.sparse <- bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1
+  cormat.sparse <- as.matrix(bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1)
   cormat.sparse[4, ] <- beta.sparse
   
-   coefnames.sparse <- apply(cormat.sparse[1:3,], 2, FUN=function(z){
+   coefnames.sparse <- apply(as.matrix(cormat.sparse[1:3,]), 2, FUN=function(z){
     c1 <- colnames(treatmat.theta)[z[1]]
     c2 <- colnames(Xmat)[z[2]]
     c3 <- colnames(Xmat)[z[3]]
@@ -271,11 +274,12 @@ MDEI <- function(y,
   if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
   
   Xmat.spline <-
-    matrix(NA, nrow = n, ncol = ncol(X) * ncol(bs.me(rnorm(20), "norm")) + 10)
+    matrix(NA, nrow = n, ncol = ncol(X) * 27 + 10)
   colnames(Xmat.spline) <- paste("init",1:ncol(Xmat.spline),sep="_")
   for (i.X in 1:ncol(X)) {
     col.start <- which(is.na(Xmat.spline[1, ]))[1]
-    bmat <- bs.me(X[, i.X], colnames(X)[i.X] )
+    bmat <- as.matrix(bs.me(X[, i.X], colnames(X)[i.X] ))
+    if(ncol(bmat)==1) Xmat.spline[ ,col.start]  <- bmat
     col.stop <- ncol(bmat) + col.start - 1
     Xmat.spline[, col.start:col.stop] <- bmat
     colnames(Xmat.spline)[col.start:col.stop] <- colnames(bmat)
@@ -323,6 +327,7 @@ MDEI <- function(y,
     
     coefmat <- cbind(coefmat,singlefit.1$cormat.sparse,singlefit.2$cormat.sparse)
     
+    cat("Finished with repeated cross-fit", i.runs, "\n")
   }
   
   se.theta <-
