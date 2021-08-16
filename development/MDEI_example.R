@@ -1,7 +1,10 @@
 #library(MDEI)
 
-devtools::load_all("~/Dropbox/Github/MDEI")
+#devtools::load_all("~/Dropbox/Github/MDEI")
+#devtools::install_github('ratkovic/MDEI/tree/development', force=TRUE)
 library(tictoc)
+library(MDEI)
+
 n <- 1000
 
 X <- matrix(rnorm(n*5), nrow = n)
@@ -17,9 +20,11 @@ y <- theta.true + X[,2] + rnorm(n)
 
 set.seed(100)
 tic()
-m1 <- MDEI(y, treat, X, splits=50, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=10, alpha=.9)
 toc()
 
+
+cor(m1$tau.est)
 
 cor(m1$tau.est, tau.true)
 cor(m1$theta.est, theta.true)
