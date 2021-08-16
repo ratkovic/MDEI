@@ -335,7 +335,7 @@ MDEI <- function(y,
   
   se.tau <- (apply(tauvar.run, 1, hl.mean) + apply(tau.run, 1, hl.var)) ^
     .5
-  critical.value.tau <- (critical.value.theta ^ 2 + 1) ^ .5
+  critical.value.tau <- critical.value.theta+1#(critical.value.theta ^ 2 + 1) ^ .5
   CIs.tau <-
     rowMeans(tau.run) + critical.value.tau * cbind(-se.tau, se.tau)
   
