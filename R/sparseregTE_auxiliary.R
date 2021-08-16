@@ -327,7 +327,7 @@ MDEI <- function(y,
     
     coefmat <- cbind(coefmat,singlefit.1$cormat.sparse,singlefit.2$cormat.sparse)
     
-    cat("Finished with repeated cross-fit", i.runs, "\n")
+    cat("Finished with cross-fit", i.runs, "\n")
   }
   
   se.theta <-
