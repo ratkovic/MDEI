@@ -115,3 +115,19 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
   
   return List::create(Named("cors") = indexCurrs, _["Msubsamp"] = Msubsamp, _["MConstruct"] = MConstruct, _["MConstructDerivative"] = MConstructDerivative); //returns a highest correlations, matrix M, variable names
 }
+
+std::vector<string> names(std::vector<arma::vec> indexCurrs, std::vector<string> Xnames, std::vector<string> treatNames) {
+  //std::vector<arma::vec> indexCurrs = L["cors"], where L is the output of namesAndCorrs
+  std::vector<string> n;
+  
+  for (unsigned int l = 0; l < indexCurrs.size(); ++l) {
+    arma::vec indexCurr = indexCurrs[l];
+    int i = indexCurr(0);
+    int j = indexCurr(1);
+    int k = indexCurr(2);
+    std::string s = treatNames[i] + "_" + to_string(i) + " x " + Xnames[j] + "_" + to_string(j) + " x " + Xnames[k] + "_" + to_string(k);
+    n.push_back(s);
+  }
+  
+  return n;
+}
