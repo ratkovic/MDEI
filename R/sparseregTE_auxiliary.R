@@ -157,6 +157,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   colnames.treat <- paste("treat", 1:ncol(treatmat.theta), sep = "")
   
   ## Calculate correlations
+  tic("Creating bases")
   bases.obj <-
     createBases(replaceme,
                 Xmat,
@@ -164,7 +165,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
                 treatmat.theta,
                 treatmat.tau,
                 ratio = 50)
+  toc()
   
+  tic("GCV call")
   n.a <- sum(replaceme == 1)
   p.a <- ncol(bases.obj$Msubsamp)
   
@@ -175,7 +178,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         alphas = alpha.seq,
         tol = 1e-2)
   beta.sp <- as.vector(g1$beta)
+  toc()
   
+  tic("Gathering coefficients")
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
   cormat.sparse <- as.matrix(bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1)
   cormat.sparse[4, ] <- beta.sparse
@@ -188,8 +193,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
     paste(c1,c2,c3,sep=" x ")
   })
    
+   
    colnames(cormat.sparse) <- coefnames.sparse
-  
+    toc()
   
   
   te.curr <- cbind(0, bases.obj$MConstructDerivative) %*% beta.sp
