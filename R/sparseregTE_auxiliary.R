@@ -176,9 +176,6 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         tol = 1e-2)
   beta.sp <- as.vector(g1$beta)
   
-  m1 <- mget(ls())
-  save(m1, file="diagnose.Rda")
-  
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
   cormat.sparse <- as.matrix(bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1)
   cormat.sparse[4, ] <- beta.sparse
