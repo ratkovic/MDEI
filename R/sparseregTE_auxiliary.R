@@ -179,8 +179,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         X.Construct,
         alphas = alpha.seq,
         tol = 1e-2)
-  beta.sp <- as.vector(g1$beta) * lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
-  beta.sp[1] <- g1$beta[1]
+  beta.sp <- as.vector(g1$beta) #* lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
+  # beta.sp[1] <- g1$beta[1]
   diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
   hii <- rowSums((X.Construct%*%solve(XpX.Construct))*X.Construct)
   errs.loo <- as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
