@@ -346,7 +346,7 @@ MDEI <- function(y,
   se.theta <-
     (apply(thetavar.run, 1, hl.mean) + apply(theta.run, 1, hl.var)) ^ .5
   # ts.theta <- (y.partial.run - theta.run) / se.theta
-  # ts.theta <- errs.loo / se.theta
+   ts.theta <- errs.loo.run / se.theta
   
   critical.value.theta <- quantile(abs(ts.theta), alpha)
   

@@ -10,9 +10,9 @@ n <- 1000
 X <- matrix(rnorm(n*5), nrow = n)
 treat <- rnorm(n)
 
-theta.true <- treat^2
+theta.true <- 2*treat#treat^2
 theta.true <- theta.true - mean(theta.true)
-tau.true <- 2*treat
+tau.true <- 2#2*treat
 Ey.x.true <- X[,1]^2+X[,1]
 Ey.x.true <- Ey.x.true - mean(Ey.x.true)
 
@@ -24,7 +24,6 @@ m1 <- MDEI(y, treat, X, splits=10, alpha=.9)
 toc()
 
 
-cor(m1$tau.est)
 
 cor(m1$tau.est, tau.true)
 cor(m1$theta.est, theta.true)
@@ -37,7 +36,6 @@ plot(sort(treat),sort(treat)^2-mean(sort(treat)^2), type="l", ylim=range(m1$thet
 points(treat,m1$theta.est-mean(m1$theta.est), pch=19, cex=.5)
 
 
-mean(apply(CIs.tau-2*treat,1,prod)<0)
 
-mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
+mean(apply(m1$CIs.tau-tau.true,1,prod)<0)
 
