@@ -157,7 +157,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   colnames.treat <- paste("treat", 1:ncol(treatmat.theta), sep = "")
   
   ## Calculate correlations
-  tic("Creating bases")
+  # tic("Creating bases")
   bases.obj <-
     createBases(replaceme,
                 Xmat,
@@ -165,22 +165,29 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
                 treatmat.theta,
                 treatmat.tau,
                 ratio = 50)
-  toc()
+  # toc()
   
-  tic("GCV call")
+  # tic("GCV call")
   n.a <- sum(replaceme == 1)
   p.a <- ncol(bases.obj$Msubsamp)
   
   alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
+  X.Construct <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
+  XpX.Construct <-crossprod(X.Construct)
   g1 <-
-    GCV(y.partial[replaceme == 1],
-        cbind(1, bases.obj$Msubsamp),
+    GCV(y.partial[replaceme == 2],
+        X.Construct,
         alphas = alpha.seq,
         tol = 1e-2)
   beta.sp <- as.vector(g1$beta)
-  toc()
+  diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
+  hii <- rowSums((X.Construct%*%solve(XpX.Construct))*X.Construct)
+  errs.loo <- as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
+  # toc()
   
-  tic("Gathering coefficients")
+  
+  
+  # tic("Gathering coefficients")
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
   cormat.sparse <- as.matrix(bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1)
   cormat.sparse[4, ] <- beta.sparse
@@ -195,7 +202,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
    
    
    colnames(cormat.sparse) <- coefnames.sparse
-    toc()
+    # toc()
   
   
   te.curr <- cbind(0, bases.obj$MConstructDerivative) %*% beta.sp
@@ -231,6 +238,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
       "var.tau" = var.tau,
       "y.partial" = y.partial[replaceme == 2],
       "Ey.x" = Ey.x[replaceme == 2],
+      "errs.loo" = errs.loo,
       "cormat.sparse" = cormat.sparse
     )
   
@@ -296,7 +304,7 @@ MDEI <- function(y,
   
   ## Containers ----
   
-  Ey.x.run <-
+  errs.loo.run <- Ey.x.run <-
     y.partial.run <-
     theta.run <-
     tau.run <-
@@ -320,13 +328,15 @@ MDEI <- function(y,
     tauvar.run[replaceme == 1, i.runs] <- singlefit.1$var.tau
     y.partial.run[replaceme == 1, i.runs] <- singlefit.1$y.partial
     Ey.x.run[replaceme == 1, i.runs] <- singlefit.1$Ey.x
-    
+    errs.loo.run[replaceme == 1, i.runs] <- singlefit.1$errs.loo
+      
     theta.run[replaceme == 2, i.runs] <- singlefit.2$theta.pred
     tau.run[replaceme == 2, i.runs] <- singlefit.2$tau.pred
     thetavar.run[replaceme == 2, i.runs] <- singlefit.2$var.theta
     tauvar.run[replaceme == 2, i.runs] <- singlefit.2$var.tau
     y.partial.run[replaceme == 2, i.runs] <- singlefit.2$y.partial
     Ey.x.run[replaceme == 2, i.runs] <- singlefit.2$Ey.x
+    errs.loo.run[replaceme == 2, i.runs] <- singlefit.2$errs.loo
     
     coefmat <- cbind(coefmat,singlefit.1$cormat.sparse,singlefit.2$cormat.sparse)
     
@@ -335,7 +345,9 @@ MDEI <- function(y,
   
   se.theta <-
     (apply(thetavar.run, 1, hl.mean) + apply(theta.run, 1, hl.var)) ^ .5
-  ts.theta <- (y.partial.run - theta.run) / se.theta
+  # ts.theta <- (y.partial.run - theta.run) / se.theta
+  # ts.theta <- errs.loo / se.theta
+  
   critical.value.theta <- quantile(abs(ts.theta), alpha)
   
   CIs.theta <-

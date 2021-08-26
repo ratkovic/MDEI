@@ -1,9 +1,9 @@
 #library(MDEI)
 
-#devtools::load_all("~/Dropbox/Github/MDEI")
+devtools::load_all("~/Dropbox/Github/MDEI")
 #devtools::install_github('ratkovic/MDEI/tree/development', force=TRUE)
 library(tictoc)
-library(MDEI)
+#library(MDEI)
 
 n <- 1000
 
@@ -36,6 +36,8 @@ points(treat,m1$tau.est, pch=19, cex=.5)
 plot(sort(treat),sort(treat)^2-mean(sort(treat)^2), type="l", ylim=range(m1$theta.est))
 points(treat,m1$theta.est-mean(m1$theta.est), pch=19, cex=.5)
 
+
+mean(apply(CIs.tau-2*treat,1,prod)<0)
 
 mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
 
