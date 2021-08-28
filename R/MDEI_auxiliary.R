@@ -110,6 +110,7 @@ createBases <-
            treatmat.theta,
            treatmat.tau,
            ratio) {
+    
     n1 <- sum(replaceme == 1)
     bases.obj <- namesAndCorrs(
       XSubsamp =  Xmat[replaceme == 1, ],
@@ -137,6 +138,58 @@ createBases <-
     bases.obj$MConstructDerivative <-
       bases.obj$MConstructDerivative[, keeps]
     
+    ## Orthogonalize? ----
+    
+    y.partial.temp <- y.partial
+    Msubsamp.temp <- bases.obj$Msubsamp*NA
+    MConstruct.temp <- bases.obj$MConstruct*NA
+    MConstructDerivative.temp <- bases.obj$MConstructDerivative*NA
+    cormat.temp <- cormat*NA  
+    maxcor.run <- NULL
+    for(i.curr in 1:(ncol(Msubsamp.temp)-2)){
+    cors <- suppressWarnings(abs(cor(bases.obj$Msubsamp, y.partial.temp[replaceme==1])))
+    cors[maxcor.run] <- 0
+    maxcor <- which.max(cors)
+    maxcor.run[i.curr] <- maxcor
+    
+    Msubsamp.temp[,i.curr] <- bases.obj$Msubsamp[,maxcor]
+    MConstruct.temp[,i.curr] <- bases.obj$MConstruct[,maxcor]
+    MConstructDerivative.temp[,i.curr] <- bases.obj$MConstructDerivative[,maxcor]
+    cormat.temp[,i.curr] <- cormat[,maxcor]
+  
+    coefs.temp <- t(bases.obj$Msubsamp[,maxcor])%*%bases.obj$Msubsamp/sum(bases.obj$Msubsamp[,maxcor]^2)
+    coefs.temp <- as.vector(coefs.temp)
+    #coefs.temp <- apply(bases.obj$Msubsamp, 2, FUN=function(z) lm(z~bases.obj$Msubsamp[,maxcor])$coef[2])
+    xsub.temp <- bases.obj$Msubsamp[,maxcor]
+    xconst.temp <- bases.obj$MConstruct[,maxcor]
+    xderiv.temp <- bases.obj$MConstructDerivative[,maxcor]
+    # for(i.temp in 1:ncol(bases.obj$Msubsamp)) {
+    #   bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]- coefs.temp[i.temp]*xsub.temp
+    #   bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]- coefs.temp[i.temp]*xconst.temp
+    #   bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]- coefs.temp[i.temp]*xderiv.temp
+    #   
+    #   }
+    
+  
+    
+    #bases.obj$Msubsamp[,maxcor] <- NA
+    }
+    
+    keeps <- which(colSums(is.na(Msubsamp.temp))==0 )
+    Msubsamp.temp <- Msubsamp.temp[,keeps]
+    MConstruct.temp <- MConstruct.temp[,keeps]
+    MConstructDerivative.temp <- MConstructDerivative.temp[,keeps]
+    cormat.temp <- cormat.temp[,keeps] 
+    
+    bases.obj$cormat <- cormat.temp
+    bases.obj$Msubsamp <- Msubsamp.temp
+    bases.obj$MConstruct <- MConstruct.temp
+    bases.obj$MConstructDerivative <-
+      MConstructDerivative.temp
+    
     bases.obj
     
+    
   }
+
+
