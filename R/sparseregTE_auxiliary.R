@@ -84,20 +84,20 @@ hl.var <- function (x) {
 
 ## Partial out X
 partialOut <- function(y, X, replaceme) {
-  data.ranger1 <- data.frame(X)[replaceme==1,]
-  data.ranger2 <- data.frame(X)[replaceme==2,]
-  y1 <- y[replaceme == 1]
+  # data.ranger1 <- data.frame(X)[replaceme==1,]
+  # data.ranger2 <- data.frame(X)[replaceme==2,]
+  # y1 <- y[replaceme == 1]
   mod1 <-
     ranger(
-      y1 ~ .,
-      data = data.ranger1,
-      # case.weights = 1 * (replaceme == 1),
-      num.trees = 1000 #,
-      # write.forest = F
+      y ~ .,
+      data = data.frame(X),#data.ranger1,
+      case.weights = 1 * (replaceme == 1),
+      num.trees = 1000,
+      write.forest = F
     )
-  preds1 <- predict(mod1, data = data.frame(X))[[1]]
-  y.partialout <- y - lm(y~preds1, weights = 1*(replaceme==2))$fitted#mod1$predictions
-  #y.partialout <- y - preds1 #mod1$predictions
+  # preds1 <- predict(mod1, data = data.frame(X))[[1]]
+  # y.partialout <- y - lm(y~I(mod1$predictions), weights = 1*(replaceme==2))$fitted#mod1$predictions
+  y.partialout <- y -  mod1$predictions
   
   y.partialout - mean(y.partialout[replaceme == 1])
   
@@ -150,9 +150,11 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   replaceme <- replaceme0
   Xmat <- Xmat0
   
-  y.partial <- partialOut(y, X, replaceme)
-  Ey.x <- y - y.partial
   treat.partial <- partialOut(treat, X, replaceme)
+  treat.pscore <- treat-treat.partial
+  y.partial <- partialOut(y, cbind(X), replaceme)
+  Ey.x <- y - y.partial
+
   treatmat.theta <- bs.me(treat.partial, "treatment")
   treatmat.tau <- dbs.me(treat.partial)
   
@@ -192,8 +194,10 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   beta.keeps <- unique(c(1,which(abs(g1$beta)>0.01*sd(y.partial) )))
   if(length(beta.keeps) ==1 ) beta.keeps <- c(1,2)
   lm.beta <- lm(y.partial[replaceme == 2]~X.Construct2[,beta.keeps]-1)
+  lm.beta <- lm(y[replaceme==2]~I(y-y.partial)[replaceme==2]+X.Construct2[,beta.keeps]-1)
+  
   beta.sp <- 0*beta.sp
-  beta.sp[beta.keeps] <- lm.beta$coef
+  beta.sp[beta.keeps] <- lm.beta$coef[-1]
   hii <- influence(lm.beta)$hat
   #diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
   #hii <- rowSums((X.Construct%*%solve(XpX.Construct))*X.Construct)
@@ -221,8 +225,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
     # toc()
   
   
-  te.curr <- cbind(0, bases.obj$MConstructDerivative) %*% beta.sp
   fits.curr <- cbind(1, bases.obj$MConstruct) %*% beta.sp
+  te.curr <- cbind(0, bases.obj$MConstructDerivative) %*% beta.sp
   
   ## Variance calculations ----
   
