@@ -172,18 +172,27 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   p.a <- ncol(bases.obj$Msubsamp)
   
   alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
-  X.Construct <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
-  XpX.Construct <-crossprod(X.Construct)
+  X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
+  X.Construct2 <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
+  
+  # XpX.Construct <-crossprod(X.Construct1)
   g1 <-
-    GCV(y.partial[replaceme == 2],
-        X.Construct,
+    GCV(y.partial[replaceme == 1],
+        X.Construct1,
         alphas = alpha.seq,
-        tol = 1e-2)
-  beta.sp <- as.vector(g1$beta) * lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
-  beta.sp[1] <- g1$beta[1]
-  diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
-  hii <- rowSums((X.Construct%*%solve(XpX.Construct))*X.Construct)
-  errs.loo <- as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
+        tol = 1e-3*sd(y.partial))
+  beta.sp <- as.vector(g1$beta) #* lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
+  #beta.sp[1] <- g1$beta[1]
+  beta.keeps <- unique(c(1,which(abs(g1$beta)>0.01*sd(y.partial) )))
+  if(length(beta.keeps) ==1 ) beta.keeps <- c(1,2)
+  lm.beta <- lm(y.partial[replaceme == 2]~X.Construct2[,beta.keeps]-1)
+  beta.sp <- 0*beta.sp
+  beta.sp[beta.keeps] <- lm.beta$coef
+  hii <- influence(lm.beta)$hat
+  #diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
+  #hii <- rowSums((X.Construct%*%solve(XpX.Construct))*X.Construct)
+  errs.loo <- lm.beta$res/(1-hii)
+    #as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
   # toc()
   
   
