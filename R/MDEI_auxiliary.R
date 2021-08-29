@@ -84,22 +84,26 @@ hl.var <- function (x) {
 
 ## Partial out X
 partialOut <- function(y, X, replaceme) {
-  # data.ranger1 <- data.frame(X)[replaceme==1,]
+   data.ranger1 <- data.frame(X)[replaceme==1,]
   # data.ranger2 <- data.frame(X)[replaceme==2,]
-  # y1 <- y[replaceme == 1]
+  y1 <- y[replaceme == 1]
   mod1 <-
     ranger(
       y ~ .,
-      data = data.frame(X),#data.ranger1,
-      case.weights = 1 * (replaceme == 1),
+      data = data.frame(X),
+      case.weights = length(y) * (replaceme == 1),
       num.trees = 1000,
       write.forest = F
     )
-  # preds1 <- predict(mod1, data = data.frame(X))[[1]]
+  #  preds1 <- predict(mod1, data = data.frame(X))[[1]]
   # y.partialout <- y - lm(y~I(mod1$predictions), weights = 1*(replaceme==2))$fitted#mod1$predictions
-  y.partialout <- y -  mod1$predictions
+  # y.partialout <- y -  mod1$predictions
   
-  y.partialout - mean(y.partialout[replaceme == 1])
+  # y.partialout - mean(y.partialout[replaceme == 1])
+   # lm(y ~ preds1,weights=1*(replaceme==2))$res
+  # print(lm(y~preds1))
+    preds1 <- mod1$predictions
+    y - preds1
   
 }
 

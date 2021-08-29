@@ -244,6 +244,7 @@ MDEI <- function(y,
   coefs.return <- coefs.return[sort(prop.count,dec=T,ind=T)$ix, ]
   rownames(coefs.return) <- NULL
   
+  allobjs <- mget(ls())
   output <- list(
     "tau.est" = apply(tau.run, 1, hl.mean),
     "CIs.tau" = CIs.tau,
@@ -252,7 +253,8 @@ MDEI <- function(y,
     "critical.values" = list("theta" = critical.value.theta, "tau" =
                                critical.value.tau),
     "Ey.x" = rowMeans(Ey.x.run),
-    "coefficients"=coefs.return
+    "coefficients"=coefs.return,
+    "internal"= allobjs
   )
   return(output)
 }
