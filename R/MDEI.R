@@ -33,18 +33,37 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   # toc()
   
   # tic("GCV call")
-  n.a <- sum(replaceme == 1)
-  p.a <- ncol(bases.obj$Msubsamp)
+  ## Trim off split 1
+  # n.a <- sum(replaceme == 1)
+  # p.a <- ncol(bases.obj$Msubsamp)
+  # alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
+  # g0 <-
+  #   GCV(y.partial[replaceme == 1],
+  #       cbind(1,bases.obj$Msubsamp),
+  #       alphas = alpha.seq,
+  #       tol = 1e-6*sd(y.partial))
+  # 
+  # keeps.gcv <- which(abs(g0$beta[-1]) > 1e-2*sd(y.partial))
+  # if(length(keeps.gcv)<3) keeps.gcv <- unique(c(1,2,3,keeps.gcv))
+  # bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps.gcv]
+  # bases.obj$MConstruct <- bases.obj$MConstruct[,keeps.gcv]
+  # bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps.gcv]
+  # bases.obj$cormat <- bases.obj$cormat[,keeps.gcv]
+  # 
   
+  ## 
+  
+  n.a <- sum(replaceme == 2)
+  p.a <- ncol(bases.obj$Msubsamp)
   alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
-  X.Construct <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
+  X.Construct <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
   X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
   X.Construct2 <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
   
-  XpX.Construct <-crossprod(X.Construct1)
+  XpX.Construct <-crossprod(X.Construct2)
   g1 <-
-    GCV(y.partial[replaceme == 1],
-        X.Construct1,
+    GCV(y.partial[replaceme == 2],
+        X.Construct2,
         alphas = alpha.seq,
         tol = 1e-6*sd(y.partial))
   beta.sp <- as.vector(g1$beta) #* lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
