@@ -172,7 +172,11 @@ createBases <-
       bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]- coefs.temp[i.temp]*xsub.temp
       bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]- coefs.temp[i.temp]*xconst.temp
       bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]- coefs.temp[i.temp]*xderiv.temp
-
+      sd.adj <- sd(bases.obj$Msubsamp[,i.temp])
+      bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]/sd.adj
+      bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]/sd.adj
+      bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]/sd.adj
+      
       }
     
   
