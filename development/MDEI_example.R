@@ -38,4 +38,3 @@ points(treat,m1$theta.est-mean(m1$theta.est), pch=19, cex=.5)
 
 mean(apply(m1$CIs.tau-tau.true,1,prod)<0)
 mean(m1$tau.est)
-mean(m1$tau.est*lm(y~m1$theta.est)$coef[2])

@@ -142,6 +142,7 @@ createBases <-
     bases.obj$MConstructDerivative <-
       bases.obj$MConstructDerivative[, keeps]
     
+    # return(bases.obj)
     ## Orthogonalize? ----
     
     y.partial.temp <- y.partial
@@ -167,12 +168,12 @@ createBases <-
     xsub.temp <- bases.obj$Msubsamp[,maxcor]
     xconst.temp <- bases.obj$MConstruct[,maxcor]
     xderiv.temp <- bases.obj$MConstructDerivative[,maxcor]
-    # for(i.temp in 1:ncol(bases.obj$Msubsamp)) {
-    #   bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]- coefs.temp[i.temp]*xsub.temp
-    #   bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]- coefs.temp[i.temp]*xconst.temp
-    #   bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]- coefs.temp[i.temp]*xderiv.temp
-    #   
-    #   }
+    for(i.temp in 1:ncol(bases.obj$Msubsamp)) {
+      bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]- coefs.temp[i.temp]*xsub.temp
+      bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]- coefs.temp[i.temp]*xconst.temp
+      bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]- coefs.temp[i.temp]*xderiv.temp
+
+      }
     
   
     

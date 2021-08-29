@@ -8,7 +8,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   Xmat <- Xmat0
   
   treat.partial <- partialOut(treat, X, replaceme)
-  treat.pscore <- treat-treat.partial
+  # treat.pscore <- treat-treat.partial#lm(treat~treat.partial, weights=1*(replaceme==1))$fit
   y.partial <- partialOut(y, cbind(X), replaceme)
   Ey.x <- y - y.partial
 
@@ -42,14 +42,18 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   #       cbind(1,bases.obj$Msubsamp),
   #       alphas = alpha.seq,
   #       tol = 1e-6*sd(y.partial))
+  #
+  # X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
   # 
-  # keeps.gcv <- which(abs(g0$beta[-1]) > 1e-2*sd(y.partial))
+  # beta.sp <- as.vector(sparsereg:::sparsereg(y.partial[replaceme == 1], X.Construct1, EM=T,
+  #                                            verbose=F, alpha.prior="parametric")$coef)
+  #  keeps.gcv <- which(abs(beta.sp[-1]) > 1e-2*sd(y.partial))
   # if(length(keeps.gcv)<3) keeps.gcv <- unique(c(1,2,3,keeps.gcv))
   # bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps.gcv]
   # bases.obj$MConstruct <- bases.obj$MConstruct[,keeps.gcv]
   # bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps.gcv]
   # bases.obj$cormat <- bases.obj$cormat[,keeps.gcv]
-  # 
+  # # 
   
   ## 
   
@@ -67,6 +71,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         alphas = alpha.seq,
         tol = 1e-6*sd(y.partial))
   beta.sp <- as.vector(g1$beta) #* lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
+  #beta.sp <- as.vector(sparsereg:::sparsereg(y.partial[replaceme == 2], X.Construct2, EM=T,
+   #                                verbose=F)$coef)
   #beta.sp[1] <- g1$beta[1]
   # beta.keeps <- unique(c(1,which(abs(g1$beta)>0.01*sd(y.partial) )))
   # if(length(beta.keeps) ==1 ) beta.keeps <- c(1,2)
@@ -77,7 +83,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   # beta.sp[beta.keeps] <- lm.beta$coef[-1]
   # hii <- influence(lm.beta)$hat
   diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
-  hii <- rowSums((X.Construct%*%solve(XpX.Construct))*X.Construct)
+  hii <- rowSums((X.Construct%*%MASS::ginv(XpX.Construct))*X.Construct)
   errs.loo <- #lm.beta$res/(1-hii)
     as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
   # toc()
@@ -103,8 +109,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   
   
   fits.curr <- cbind(1, bases.obj$MConstruct) %*% beta.sp
-  te.curr <- cbind(0, bases.obj$MConstructDerivative) %*% beta.sp
-  
+  te.curr <- cbind(0, bases.obj$MConstructDerivative) %*% beta.sp 
   ## Variance calculations ----
   
   # Variance of fitted value
