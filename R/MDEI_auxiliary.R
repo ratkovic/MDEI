@@ -124,7 +124,7 @@ createBases <-
       treatConstruct = treatmat.theta,
       XConstructDerivative = Xmat,
       treatConstructDerivative = treatmat.tau,
-      a = ceiling(min(ratio * (1 + n1 ^ .2), n1/10))
+      a = ceiling(min(ratio * (1 + n1 ^ .2), n1/4))
     )
     
     
