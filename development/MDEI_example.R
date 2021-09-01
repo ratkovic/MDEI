@@ -9,13 +9,13 @@ n <- 1000
 X <- matrix(rnorm(n*5), nrow = n)
 treat <- rnorm(n)
 
-theta.true <- 2*treat#treat^2
+theta.true <- treat*2
 theta.true <- theta.true - mean(theta.true)
-tau.true <- 2#2*treat
-Ey.x.true <- X[,1]^2+X[,1]
+tau.true <- 2
+Ey.x.true <- (X[,1]^2+X[,1])
 Ey.x.true <- Ey.x.true - mean(Ey.x.true)
 
-y <- theta.true + X[,2] + rnorm(n,sd=3)
+y <- theta.true  + rnorm(n,sd=1)*sd(theta.true )
 
 # set.seed(100)
 tic()
@@ -38,3 +38,10 @@ points(treat,m1$theta.est-mean(m1$theta.est), pch=19, cex=.5)
 
 mean(apply(m1$CIs.tau-tau.true,1,prod)<0)
 mean(m1$tau.est)
+
+
+options(device="quartz")
+plot(treat,m1$tau.est,type="n",ylim=range(m1$CIs.tau))
+lines(treat,tau.true)
+segments(x0=treat,x1=treat,y0=m1$CIs.tau[,1],y1=m1$CIs.tau[,2],col=gray(.7))
+points(treat,m1$tau.est,pch=19,cex=.5)

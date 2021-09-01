@@ -146,9 +146,16 @@ createBases <-
     ## Orthogonalize? ----
     
     y.partial.temp <- y.partial
+    
+    Msubsamp.0 <- bases.obj$Msubsamp
+    MConstruct.0 <- bases.obj$MConstruct
+    MConstructDerivative.0 <- bases.obj$MConstructDerivative
+    cormat.0 <- bases.obj$cormat
+    
     Msubsamp.temp <- bases.obj$Msubsamp*NA
     MConstruct.temp <- bases.obj$MConstruct*NA
     MConstructDerivative.temp <- bases.obj$MConstructDerivative*NA
+    
     cormat.temp <- cormat*NA  
     maxcor.run <- NULL
     for(i.curr in 1:(ncol(Msubsamp.temp)-2)){
@@ -185,10 +192,17 @@ createBases <-
     }
     
     keeps <- which(colSums(is.na(Msubsamp.temp))==0 )
+    Msubsamp.temp <- cbind(Msubsamp.temp[,keeps], Msubsamp.0)
+    MConstruct.temp <- cbind(MConstruct.temp[,keeps], MConstruct.0)
+    MConstructDerivative.temp <- cbind(MConstructDerivative.temp[,keeps], MConstructDerivative.0)
+    cormat.temp <- cbind(cormat.temp[,keeps], cormat.0)
+    
+    keeps <- which(as.vector(checkcor(Msubsamp.temp, .9)) == 1)
+    
     Msubsamp.temp <- Msubsamp.temp[,keeps]
     MConstruct.temp <- MConstruct.temp[,keeps]
     MConstructDerivative.temp <- MConstructDerivative.temp[,keeps]
-    cormat.temp <- cormat.temp[,keeps] 
+    cormat.temp <- cormat.temp[,keeps]
     
     bases.obj$cormat <- cormat.temp
     bases.obj$Msubsamp <- Msubsamp.temp
