@@ -204,7 +204,8 @@ List update(List L, double tol) {
     }
     arma::uvec update_ind = find(abs(beta) > tol*sdy );
     edf = trace(XpX.submat(update_ind,update_ind)*pinv(XpXsolve.submat(update_ind,update_ind)));
-    double den = (n-log(n)/2*edf);
+    // double den = (n-log(n)/2*edf);
+    double den = (n-edf);
     GCV = sum((y-fits)%(y-fits))/(den*den);
   }
   //Etausqinv(0) = GCV;

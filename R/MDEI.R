@@ -71,6 +71,17 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         X.Construct2,
         alphas = alpha.seq,
         tol = 1e-6*sd(y.partial))
+  # 
+  # g2 <-
+  #   GCV(y.partial[replaceme == 2],
+  #       X.Construct2,
+  #       alphas = alpha.seq,
+  #       tol = 1e-6*sd(y.partial))
+  
+  # if(g2$GCV > g1$GCV) 
+    
+    # g1 <- g2
+
   beta.sp <- as.vector(g1$beta) #* lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
   #beta.sp <- as.vector(sparsereg:::sparsereg(y.partial[replaceme == 2], X.Construct2, EM=T,
    #                                verbose=F)$coef)

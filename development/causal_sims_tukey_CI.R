@@ -81,6 +81,8 @@ gatherresults<-function(fit,obj=m1){
 
 select.run<-k.run<-output.run<-rf.run<-NULL
 
+n <- 250; k <- 5; pot.type <- 1
+
 for(n in c(250,500,750,1000,1500,2500)){
 for(k in c(5)){
 for(pot.type in c(1,2,3,4,5)){

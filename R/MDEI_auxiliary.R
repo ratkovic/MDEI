@@ -124,7 +124,7 @@ createBases <-
       treatConstruct = treatmat.theta,
       XConstructDerivative = Xmat,
       treatConstructDerivative = treatmat.tau,
-      a = ceiling(ratio * (1 + n1 ^ .2))
+      a = ceiling(min(ratio * (1 + n1 ^ .2), n1/10))
     )
     
     
@@ -191,11 +191,11 @@ createBases <-
     #bases.obj$Msubsamp[,maxcor] <- NA
     }
     
-    keeps <- which(colSums(is.na(Msubsamp.temp))==0 )
-    Msubsamp.temp <- cbind(Msubsamp.temp[,keeps], Msubsamp.0)
-    MConstruct.temp <- cbind(MConstruct.temp[,keeps], MConstruct.0)
-    MConstructDerivative.temp <- cbind(MConstructDerivative.temp[,keeps], MConstructDerivative.0)
-    cormat.temp <- cbind(cormat.temp[,keeps], cormat.0)
+    # keeps <- which(colSums(is.na(Msubsamp.temp))==0 )
+    # Msubsamp.temp <- cbind(Msubsamp.temp[,keeps], Msubsamp.0)
+    # MConstruct.temp <- cbind(MConstruct.temp[,keeps], MConstruct.0)
+    # MConstructDerivative.temp <- cbind(MConstructDerivative.temp[,keeps], MConstructDerivative.0)
+    # cormat.temp <- cbind(cormat.temp[,keeps], cormat.0)
     
     keeps <- which(as.vector(checkcor(Msubsamp.temp, .9)) == 1)
     
