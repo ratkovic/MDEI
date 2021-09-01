@@ -60,6 +60,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   n.a <- sum(replaceme == 2)
   p.a <- ncol(bases.obj$Msubsamp)
   alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
+  
   X.Construct <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
   X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
   X.Construct2 <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
