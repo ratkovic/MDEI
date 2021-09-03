@@ -142,7 +142,7 @@ createBases <-
     bases.obj$MConstructDerivative <-
       bases.obj$MConstructDerivative[, keeps]
     
-    # return(bases.obj)
+    return(bases.obj)
     ## Orthogonalize? ----
     
     y.partial.temp <- y.partial
@@ -186,16 +186,9 @@ createBases <-
       
       }
     
-  
-    
-    #bases.obj$Msubsamp[,maxcor] <- NA
     }
     
-    # keeps <- which(colSums(is.na(Msubsamp.temp))==0 )
-    # Msubsamp.temp <- cbind(Msubsamp.temp[,keeps], Msubsamp.0)
-    # MConstruct.temp <- cbind(MConstruct.temp[,keeps], MConstruct.0)
-    # MConstructDerivative.temp <- cbind(MConstructDerivative.temp[,keeps], MConstructDerivative.0)
-    # cormat.temp <- cbind(cormat.temp[,keeps], cormat.0)
+
     
     keeps <- which(as.vector(checkcor(Msubsamp.temp, .9)) == 1)
     
