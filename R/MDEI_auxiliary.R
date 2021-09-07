@@ -127,6 +127,11 @@ createBases <-
       a = ceiling(min(ratio * (1 + n1 ^ .2), n1/4))
     )
     
+    bases.obj$Msubsamp <- cbind(treatmat.theta[replaceme == 1, 1],bases.obj$Msubsamp)
+    bases.obj$MConstruct <- cbind(treatmat.theta[, 1],bases.obj$MConstruct)
+    bases.obj$MConstructDerivative <-
+      cbind(1,bases.obj$MConstructDerivative)
+    
     
     cormat <- (matrix(unlist(bases.obj$cors), nrow = 4))
     keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .9)) == 1)
@@ -135,7 +140,7 @@ createBases <-
     if (length(keeps) < 5)
       keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .99)) == 1)
     
-    bases.obj$cormat <- cormat[, keeps]
+    bases.obj$cormat <- cbind(0,cormat)[, keeps]
     
     bases.obj$Msubsamp <- bases.obj$Msubsamp[, keeps]
     bases.obj$MConstruct <- bases.obj$MConstruct[, keeps]

@@ -47,13 +47,15 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   # 
   # beta.sp <- as.vector(sparsereg:::sparsereg(y.partial[replaceme == 1], X.Construct1, EM=T,
   #                                            verbose=F, alpha.prior="parametric")$coef)
-  #  keeps.gcv <- which(abs(beta.sp[-1]) > 1e-2*sd(y.partial))
-  # if(length(keeps.gcv)<3) keeps.gcv <- unique(c(1,2,3,keeps.gcv))
-  # bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps.gcv]
-  # bases.obj$MConstruct <- bases.obj$MConstruct[,keeps.gcv]
-  # bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps.gcv]
-  # bases.obj$cormat <- bases.obj$cormat[,keeps.gcv]
-  # # 
+    # glmnet1 <- glmnet::cv.glmnet(bases.obj$MConstruct[replaceme==1,],y.partial[replaceme == 1])
+    # keeps.gcv <- which(coef(glmnet1)[-1]!=0)
+   # keeps.gcv <- which(abs(beta.sp[-1]) > 1e-2*sd(y.partial))
+  #  if(length(keeps.gcv)<3) keeps.gcv <- unique(c(1,2,3,keeps.gcv))
+  #  bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps.gcv]
+  #  bases.obj$MConstruct <- bases.obj$MConstruct[,keeps.gcv]
+  #  bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps.gcv]
+  #  bases.obj$cormat <- bases.obj$cormat[,keeps.gcv]
+  # # # 
   
   ## 
   
