@@ -3,7 +3,7 @@
 devtools::load_all("~/Dropbox/Github/MDEI")
 #devtools::install_github('ratkovic/MDEI/tree/development', force=TRUE)
 library(tictoc)
-#library(MDEI)
+# library(MDEI)
 n <- 1000
 
 X <- matrix(rnorm(n*5), nrow = n)
@@ -12,14 +12,14 @@ treat <- rnorm(n)
 theta.true <- treat*2
 theta.true <- theta.true - mean(theta.true)
 tau.true <- 2
-Ey.x.true <- (X[,1]^2+X[,1])
+Ey.x.true <- 0#(X[,1]^2+X[,1])
 Ey.x.true <- Ey.x.true - mean(Ey.x.true)
 
 y <- theta.true  + rnorm(n,sd=1)*sd(theta.true )
 
 # set.seed(100)
 tic()
-m1 <- MDEI(y, treat, X, splits=10, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=100, alpha=.9)
 toc()
 
 
