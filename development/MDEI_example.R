@@ -1,11 +1,8 @@
 
-#library(MDEI)
-
-devtools::load_all("~/Dropbox/Github/MDEI")
+# devtools::load_all("~/Dropbox/Github/MDEI")
 #devtools::install_github('ratkovic/MDEI/tree/development', force=TRUE)
 library(tictoc)
-# library(MDEI)
-
+library(MDEI)
 library(grf)
 library(KRLS2)
 
