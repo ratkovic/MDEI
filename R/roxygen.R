@@ -10,5 +10,6 @@
 #' @importFrom splines2 bSpline dbs
 #' @importFrom Rcpp sourceCpp
 #' @import stats
+#' @importFrom MASS ginv
 ## usethis namespace: end
 NULL
