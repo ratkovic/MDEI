@@ -97,7 +97,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   # beta.sp[beta.keeps] <- lm.beta$coef[-1]
   # hii <- influence(lm.beta)$hat
   diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
-  hii <- rowSums((X.Construct%*%MASS::ginv(XpX.Construct))*X.Construct)
+  hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
   errs.loo <- #lm.beta$res/(1-hii)
     as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
   # toc()
@@ -279,7 +279,7 @@ MDEI <- function(y,
   prop.count <- sort(tapply(coefmat[4,],colnames(coefmat), length))/(splits*2)
   
   coefs.return <- data.frame(names(coefs.ave),coefs.ave,prop.count)
-  coefs.return <- coefs.return[sort(prop.count,dec=T,ind=T)$ix, ]
+  coefs.return <- coefs.return[sort(prop.count,decreasing = T, index.return = T)$ix, ]
   rownames(coefs.return) <- NULL
   
   allobjs <- mget(ls())

@@ -3,6 +3,7 @@
 export()
 export(MDEI)
 import(stats)
+importFrom(MASS,ginv)
 importFrom(Rcpp,sourceCpp)
 importFrom(ranger,ranger)
 importFrom(splines2,bSpline)
