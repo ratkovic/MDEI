@@ -59,6 +59,7 @@ List namesAndCorrs(arma::mat XSubsamp, arma::vec ySubsamp, arma::mat treatSubsam
   for (double i = 0; i < treatSubsamp.n_cols; ++i) {
     for (double j = 0; j < XSubsamp.n_cols; ++j) {
       for (double k = j; k < XSubsamp.n_cols; ++k) {
+      // for (double k = 0; k < XSubsamp.n_cols; ++k) {
         arma::vec inter_temp = treatSubsamp.col(i) % XSubsamp.col(j) % XSubsamp.col(k); 
         
         
