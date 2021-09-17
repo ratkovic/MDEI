@@ -169,7 +169,7 @@ List update(List L, double tol) {
   for (int i = 0; i < iters; ++i) {
     
     if (conv/sdy > tol) {
-      for (int j = 1; j < p; ++j) {
+      for (int j = 2; j < p; ++j) {
         XpXsolve(j, j) = XpX(j, j) + Etausqinv(j) + 1e-6;    
       }
       beta_last = beta;
@@ -196,6 +196,9 @@ List update(List L, double tol) {
       Etausqinv(0) = 0;
       Ewtsqtausq(0) = 0;
       
+      Etausqinv(1) = 0;
+      Ewtsqtausq(1) = 0;
+      
       lambda_0 = sqrt((alphas(count) - 1)/(sum(Ewtsqtausq)/2 + 1));
       sigma_sq = (sum((y - fits) % (y - fits)) + sum(beta % beta % Etausqinv/2))/(n/2 + p/2 + 1);
       sigma = sqrt(sigma_sq);
@@ -204,7 +207,8 @@ List update(List L, double tol) {
     }
     arma::uvec update_ind = find(abs(beta) > tol*sdy );
     edf = trace(XpX.submat(update_ind,update_ind)*pinv(XpXsolve.submat(update_ind,update_ind)));
-    double den = (n-log(n)/2*edf);
+    // double den = (n-log(n)/2*edf);
+    double den = (n-edf);
     GCV = sum((y-fits)%(y-fits))/(den*den);
   }
   //Etausqinv(0) = GCV;
