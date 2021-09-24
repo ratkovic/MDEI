@@ -195,7 +195,9 @@ MDEI <- function(y,
                  treat,
                  X,
                  splits = 10,
-                 alpha = .9) {
+                 alpha = .9,
+                 samplesplit = TRUE,
+                 conformal = TRUE) {
   n <- length(treat)
   X <- apply(X, 2, rank)
   if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
@@ -265,13 +267,15 @@ MDEI <- function(y,
    ts.theta <- errs.loo.run / se.theta
   
   critical.value.theta <- quantile(abs(ts.theta), alpha)
-  
+  if(conformal == FALSE) critical.value.theta <- qnorm((1-alpha)/2)
   CIs.theta <-
     apply(y.partial.run, 1, hl.mean) + critical.value.theta * cbind(-se.theta, se.theta)
   
   se.tau <- (apply(tauvar.run, 1, hl.mean) + apply(tau.run, 1, hl.var)) ^
     .5
   critical.value.tau <- critical.value.theta+1#(critical.value.theta ^ 2 + 1) ^ .5
+  if(conformal == FALSE) critical.value.tau <- qnorm((1-alpha)/2)
+  
   CIs.tau <-
     rowMeans(tau.run) + critical.value.tau * cbind(-se.tau, se.tau)
   
