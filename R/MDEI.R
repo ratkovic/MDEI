@@ -66,8 +66,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
     as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
 
   if(!samplesplit)  {
-    var.beta <- ginv(XpX.Construct) %*% (crossprod( X.Construct1*errs.loo))%*%ginv(XpX.Construct)
-    ses.theta <- ses.tau <- NULL
+    errs.insamp <- as.vector(y.partial[replaceme == 2]-X.Construct%*%beta.sp)
+    var.beta <- ginv(XpX.Construct) %*% (crossprod( X.Construct1*errs.insamp))%*%ginv(XpX.Construct)
     ses.theta <- rowSums((X.Construct%*%var.beta)*X.Construct)^.5
     X.ConstructDerivative <- cbind(1, bases.obj$MConstructDerivative)
     ses.tau <- rowSums((X.ConstructDerivative[replaceme==2,]%*%var.beta)*X.ConstructDerivative[replaceme==2,])^.5
@@ -242,7 +242,11 @@ MDEI <- function(y,
   se.theta <-
     (apply(thetavar.run, 1, hl.mean) + apply(theta.run, 1, hl.var)) ^ .5
   # ts.theta <- (y.partial.run - theta.run) / se.theta
-  if(!samplesplit) se.theta <- c(singlefit.1$ses.theta, singlefit.1$ses.theta)
+  if(!samplesplit) {
+    se.theta <- c(singlefit.1$ses.theta, singlefit.1$ses.theta)
+   se.theta <-
+       (se.theta^2 + apply(thetavar.run, 1, hl.mean)) ^ .5
+  }
    ts.theta <- errs.loo.run / se.theta
   
   critical.value.theta <- quantile(abs(ts.theta), alpha)
@@ -252,7 +256,10 @@ MDEI <- function(y,
   
   se.tau <- (apply(tauvar.run, 1, hl.mean) + apply(tau.run, 1, hl.var)) ^
     .5
-  if(!samplesplit) se.tau <- c(singlefit.1$ses.tau, singlefit.1$ses.tau)
+  if(!samplesplit) {
+    se.tau <- c(singlefit.1$ses.tau, singlefit.1$ses.tau)
+     se.tau <- (se.tau^2 + apply(tauvar.run, 1, hl.var)) ^ .5
+  }
   
   critical.value.tau <- critical.value.theta+1#(critical.value.theta ^ 2 + 1) ^ .5
   if(conformal == FALSE) critical.value.tau <- qnorm((1-alpha)/2)
