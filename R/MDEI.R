@@ -73,37 +73,28 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         X.Construct2,
         alphas = alpha.seq,
         tol = 1e-6*sd(y.partial))
-  # 
-  # g2 <-
-  #   GCV(y.partial[replaceme == 2],
-  #       X.Construct2,
-  #       alphas = alpha.seq,
-  #       tol = 1e-6*sd(y.partial))
-  
-  # if(g2$GCV > g1$GCV) 
-    
-    # g1 <- g2
 
-  beta.sp <- as.vector(g1$beta) #* lm(y.partial[replaceme==2]~I(X.Construct%*%g1$beta))$coef[2]
-  #beta.sp <- as.vector(sparsereg:::sparsereg(y.partial[replaceme == 2], X.Construct2, EM=T,
-   #                                verbose=F)$coef)
-  #beta.sp[1] <- g1$beta[1]
-  # beta.keeps <- unique(c(1,which(abs(g1$beta)>0.01*sd(y.partial) )))
-  # if(length(beta.keeps) ==1 ) beta.keeps <- c(1,2)
-  # lm.beta <- lm(y.partial[replaceme == 2]~X.Construct2[,beta.keeps]-1)
-  # lm.beta <- lm(y[replaceme==2]~I(y-y.partial)[replaceme==2]+X.Construct2[,beta.keeps]-1)
-  
-  # beta.sp <- 0*beta.sp
-  # beta.sp[beta.keeps] <- lm.beta$coef[-1]
-  # hii <- influence(lm.beta)$hat
+  beta.sp <- as.vector(g1$beta)
   diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
   hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
   errs.loo <- #lm.beta$res/(1-hii)
     as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
-  # toc()
   
-  
-  
+  ## Try loo tau estimates
+  y.loo <- X.Construct%*%beta.sp+errs.loo*sample(c(-1,1),length(errs.loo),TRUE)
+  g2 <-
+    GCV(y.loo,
+        X.Construct2,
+        alphas = alpha.seq,
+        tol = 1e-6*sd(y.partial))
+  #beta.sp <- as.vector(g2$beta)
+  XpX.Construct <-crossprod(X.Construct2)
+  diag(XpX.Construct) <- diag(XpX.Construct) + g2$Etausqinv
+  hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
+  errs.loo <- errs.loo/(1-hii)
+  #as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
+  #as.vector((y.loo-X.Construct%*%as.vector(g2$beta))/(1-hii))
+
   # tic("Gathering coefficients")
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
   cormat.sparse <- as.matrix(bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1)
