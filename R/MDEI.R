@@ -1,3 +1,9 @@
+## New approach.  By split:
+## 3: Partial out, learn bases
+## 1: Estimation
+## 2: Conformal
+## Then switch 'er up.
+
 ## Primary fitting function; wrapper function for this one is below
 fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   ## Partial out X's ----
@@ -32,33 +38,6 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
                 ratio = 50)
   # toc()
   
-  # tic("GCV call")
-  ## Trim off split 1
-  # n.a <- sum(replaceme == 1)
-  # p.a <- ncol(bases.obj$Msubsamp)
-  # alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
-  # g0 <-
-  #   GCV(y.partial[replaceme == 1],
-  #       cbind(1,bases.obj$Msubsamp),
-  #       alphas = alpha.seq,
-  #       tol = 1e-6*sd(y.partial))
-  #
-  # X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
-  # 
-  # beta.sp <- as.vector(sparsereg:::sparsereg(y.partial[replaceme == 1], X.Construct1, EM=T,
-  #                                            verbose=F, alpha.prior="parametric")$coef)
-    # glmnet1 <- glmnet::cv.glmnet(bases.obj$MConstruct[replaceme==1,],y.partial[replaceme == 1])
-    # keeps.gcv <- which(coef(glmnet1)[-1]!=0)
-   # keeps.gcv <- which(abs(beta.sp[-1]) > 1e-2*sd(y.partial))
-  #  if(length(keeps.gcv)<3) keeps.gcv <- unique(c(1,2,3,keeps.gcv))
-  #  bases.obj$Msubsamp <- bases.obj$Msubsamp[,keeps.gcv]
-  #  bases.obj$MConstruct <- bases.obj$MConstruct[,keeps.gcv]
-  #  bases.obj$MConstructDerivative <- bases.obj$MConstructDerivative[,keeps.gcv]
-  #  bases.obj$cormat <- bases.obj$cormat[,keeps.gcv]
-  # # # 
-  
-  ## 
-  
   n.a <- sum(replaceme == 2)
   p.a <- ncol(bases.obj$Msubsamp)
   alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
@@ -67,34 +46,19 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
   X.Construct2 <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
   
-  XpX.Construct <-crossprod(X.Construct2)
+  XpX.Construct <-crossprod(X.Construct1)
   g1 <-
-    GCV(y.partial[replaceme == 2],
-        X.Construct2,
+    GCV(y.partial[replaceme == 1],
+        X.Construct1,
         alphas = alpha.seq,
         tol = 1e-6*sd(y.partial))
 
   beta.sp <- as.vector(g1$beta)
-  diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
-  hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
+  #diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
+  #hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
   errs.loo <- #lm.beta$res/(1-hii)
     as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
   
-  ## Try loo tau estimates
-  y.loo <- X.Construct%*%beta.sp+errs.loo*sample(c(-1,1),length(errs.loo),TRUE)
-  g2 <-
-    GCV(y.loo,
-        X.Construct2,
-        alphas = alpha.seq,
-        tol = 1e-6*sd(y.partial))
-  #beta.sp <- as.vector(g2$beta)
-  XpX.Construct <-crossprod(X.Construct2)
-  diag(XpX.Construct) <- diag(XpX.Construct) + g2$Etausqinv
-  hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
-  errs.loo <- errs.loo/(1-hii)
-  #as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
-  #as.vector((y.loo-X.Construct%*%as.vector(g2$beta))/(1-hii))
-
   # tic("Gathering coefficients")
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
   cormat.sparse <- as.matrix(bases.obj$cormat[,abs(beta.sp[-1]) > 1e-2*sd(y)]+1)
@@ -221,22 +185,12 @@ MDEI <- function(y,
   ## Now, start split sample here ----
   
   for (i.runs in 1:splits) {
-    replaceme <- rep(1, n)
-    replaceme[1:floor(n / 2)] <- 2
+    replaceme <- rep(sample(1:3), n/2)[1:n]
     replaceme <- sample(replaceme)
     
+    for(i.inner in 1:3){
     singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat)
-    singlefit.1 <-
-      fit.singlesubsample(y, treat, X, 3 - replaceme, Xmat)
-    #
-    theta.run[replaceme == 1, i.runs] <- singlefit.1$theta.pred
-    tau.run[replaceme == 1, i.runs] <- singlefit.1$tau.pred
-    thetavar.run[replaceme == 1, i.runs] <- singlefit.1$var.theta
-    tauvar.run[replaceme == 1, i.runs] <- singlefit.1$var.tau
-    y.partial.run[replaceme == 1, i.runs] <- singlefit.1$y.partial
-    Ey.x.run[replaceme == 1, i.runs] <- singlefit.1$Ey.x
-    errs.loo.run[replaceme == 1, i.runs] <- singlefit.1$errs.loo
-      
+ 
     theta.run[replaceme == 2, i.runs] <- singlefit.2$theta.pred
     tau.run[replaceme == 2, i.runs] <- singlefit.2$tau.pred
     thetavar.run[replaceme == 2, i.runs] <- singlefit.2$var.theta
@@ -245,8 +199,9 @@ MDEI <- function(y,
     Ey.x.run[replaceme == 2, i.runs] <- singlefit.2$Ey.x
     errs.loo.run[replaceme == 2, i.runs] <- singlefit.2$errs.loo
     
-    coefmat <- cbind(coefmat,singlefit.1$cormat.sparse,singlefit.2$cormat.sparse)
-    
+    coefmat <- cbind(coefmat,singlefit.2$cormat.sparse)
+    replaceme <- (replaceme%%3)+1
+    }
     cat("Finished with cross-fit", i.runs, "\n")
   }
   

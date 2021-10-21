@@ -84,24 +84,15 @@ hl.var <- function (x) {
 
 ## Partial out X
 partialOut <- function(y, X, replaceme) {
-   data.ranger1 <- data.frame(X)[replaceme==1,]
-  # data.ranger2 <- data.frame(X)[replaceme==2,]
-  y1 <- y[replaceme == 1]
   mod1 <-
     ranger(
       y ~ .,
       data = data.frame(X),
-      case.weights = length(y) * (replaceme == 1),
+      case.weights = length(y) * (replaceme == 3),
       num.trees = 1000,
       write.forest = F
     )
-  #  preds1 <- predict(mod1, data = data.frame(X))[[1]]
-  # y.partialout <- y - lm(y~I(mod1$predictions), weights = 1*(replaceme==2))$fitted#mod1$predictions
-  # y.partialout <- y -  mod1$predictions
   
-  # y.partialout - mean(y.partialout[replaceme == 1])
-   # lm(y ~ preds1,weights=1*(replaceme==2))$res
-  # print(lm(y~preds1))
     preds1 <- mod1$predictions
     y - preds1
   
@@ -115,11 +106,11 @@ createBases <-
            treatmat.tau,
            ratio) {
     
-    n1 <- sum(replaceme == 1)
+    n1 <- sum(replaceme == 3)
     bases.obj <- namesAndCorrs(
-      XSubsamp =  Xmat[replaceme == 1, ],
-      ySubsamp = rank(y.partial[replaceme == 1]),
-      treatSubsamp = treatmat.theta[replaceme == 1, ],
+      XSubsamp =  Xmat[replaceme == 3, ],
+      ySubsamp = rank(y.partial[replaceme == 3]),
+      treatSubsamp = treatmat.theta[replaceme == 3, ],
       XConstruct = Xmat,
       treatConstruct = treatmat.theta,
       XConstructDerivative = Xmat,
@@ -127,12 +118,13 @@ createBases <-
       a = ceiling(min(ratio * (1 + n1 ^ .2), n1/4))
     )
     
-    bases.obj$Msubsamp <- cbind(treatmat.theta[replaceme == 1, 1],bases.obj$Msubsamp)
+    ## Put treatment vector and intercept in  ----
+    bases.obj$Msubsamp <- cbind(treatmat.theta[replaceme == 3, 1],bases.obj$Msubsamp)
     bases.obj$MConstruct <- cbind(treatmat.theta[, 1],bases.obj$MConstruct)
     bases.obj$MConstructDerivative <-
       cbind(1,bases.obj$MConstructDerivative)
     
-    
+    ## Eliminate correlated rows ----
     cormat <- (matrix(unlist(bases.obj$cors), nrow = 4))
     keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .9)) == 1)
     if (length(keeps) < 5)
@@ -141,76 +133,13 @@ createBases <-
       keeps <- which(as.vector(checkcor(bases.obj$Msubsamp, .99)) == 1)
     
     bases.obj$cormat <- cbind(0,cormat)[, keeps]
-    
     bases.obj$Msubsamp <- bases.obj$Msubsamp[, keeps]
     bases.obj$MConstruct <- bases.obj$MConstruct[, keeps]
     bases.obj$MConstructDerivative <-
       bases.obj$MConstructDerivative[, keeps]
     
     return(bases.obj)
-    ## Orthogonalize? ----
-    
-    y.partial.temp <- y.partial
-    
-    Msubsamp.0 <- bases.obj$Msubsamp
-    MConstruct.0 <- bases.obj$MConstruct
-    MConstructDerivative.0 <- bases.obj$MConstructDerivative
-    cormat.0 <- bases.obj$cormat
-    
-    Msubsamp.temp <- bases.obj$Msubsamp*NA
-    MConstruct.temp <- bases.obj$MConstruct*NA
-    MConstructDerivative.temp <- bases.obj$MConstructDerivative*NA
-    
-    cormat.temp <- cormat*NA  
-    maxcor.run <- NULL
-    for(i.curr in 1:(ncol(Msubsamp.temp)-2)){
-    cors <- suppressWarnings(abs(cor(bases.obj$Msubsamp, y.partial.temp[replaceme==1])))
-    cors[maxcor.run] <- 0
-    maxcor <- which.max(cors)
-    maxcor.run[i.curr] <- maxcor
-    
-    Msubsamp.temp[,i.curr] <- bases.obj$Msubsamp[,maxcor]
-    MConstruct.temp[,i.curr] <- bases.obj$MConstruct[,maxcor]
-    MConstructDerivative.temp[,i.curr] <- bases.obj$MConstructDerivative[,maxcor]
-    cormat.temp[,i.curr] <- cormat[,maxcor]
-  
-    coefs.temp <- t(bases.obj$Msubsamp[,maxcor])%*%bases.obj$Msubsamp/sum(bases.obj$Msubsamp[,maxcor]^2)
-    coefs.temp <- as.vector(coefs.temp)
-    #coefs.temp <- apply(bases.obj$Msubsamp, 2, FUN=function(z) lm(z~bases.obj$Msubsamp[,maxcor])$coef[2])
-    xsub.temp <- bases.obj$Msubsamp[,maxcor]
-    xconst.temp <- bases.obj$MConstruct[,maxcor]
-    xderiv.temp <- bases.obj$MConstructDerivative[,maxcor]
-    for(i.temp in 1:ncol(bases.obj$Msubsamp)) {
-      bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]- coefs.temp[i.temp]*xsub.temp
-      bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]- coefs.temp[i.temp]*xconst.temp
-      bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]- coefs.temp[i.temp]*xderiv.temp
-      sd.adj <- sd(bases.obj$Msubsamp[,i.temp])
-      bases.obj$Msubsamp[,i.temp] <- bases.obj$Msubsamp[,i.temp]/sd.adj
-      bases.obj$MConstruct[,i.temp] <- bases.obj$MConstruct[,i.temp]/sd.adj
-      bases.obj$MConstructDerivative[,i.temp] <- bases.obj$MConstructDerivative[,i.temp]/sd.adj
-      
-      }
-    
-    }
-    
 
-    
-    keeps <- which(as.vector(checkcor(Msubsamp.temp, .9)) == 1)
-    
-    Msubsamp.temp <- Msubsamp.temp[,keeps]
-    MConstruct.temp <- MConstruct.temp[,keeps]
-    MConstructDerivative.temp <- MConstructDerivative.temp[,keeps]
-    cormat.temp <- cormat.temp[,keeps]
-    
-    bases.obj$cormat <- cormat.temp
-    bases.obj$Msubsamp <- Msubsamp.temp
-    bases.obj$MConstruct <- MConstruct.temp
-    bases.obj$MConstructDerivative <-
-      MConstructDerivative.temp
-    
-    bases.obj
-    
-    
   }
 
 
