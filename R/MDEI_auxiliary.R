@@ -108,9 +108,9 @@ createBases <-
     
     n1 <- sum(replaceme == 1)
     bases.obj <- namesAndCorrs(
-      XSubsamp =  Xmat[replaceme == 1, ],
-      ySubsamp = rank(y.partial[replaceme == 1]),
-      treatSubsamp = treatmat.theta[replaceme == 1, ],
+      XSubsamp =  Xmat[replaceme == 3, ],
+      ySubsamp = rank(lm(y.partial[replaceme == 3]~treatmat.theta[replaceme == 3,1])$res),
+      treatSubsamp = treatmat.theta[replaceme == 3, ],
       XConstruct = Xmat,
       treatConstruct = treatmat.theta,
       XConstructDerivative = Xmat,
@@ -119,7 +119,7 @@ createBases <-
     )
     
     ## Put treatment vector and intercept in  ----
-    bases.obj$Msubsamp <- cbind(treatmat.theta[replaceme == 1, 1],bases.obj$Msubsamp)
+    bases.obj$Msubsamp <- cbind(treatmat.theta[replaceme == 3, 1],bases.obj$Msubsamp)
     bases.obj$MConstruct <- cbind(treatmat.theta[, 1],bases.obj$MConstruct)
     bases.obj$MConstructDerivative <-
       cbind(1,bases.obj$MConstructDerivative)

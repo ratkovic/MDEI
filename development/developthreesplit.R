@@ -24,8 +24,10 @@ plot.tsq <- function(pointest, CI){
 
 n <- 1000
 
-set.seed(1); X <- matrix(rnorm(n*5), nrow = n)
-set.seed(1); treat <- sort(rnorm(n))
+#set.seed(1); 
+X <- matrix(rnorm(n*5), nrow = n)
+#set.seed(1); 
+treat <- sort(rnorm(n))
 # set.seed(1); treat <- X[,1]+rnorm(n)
  
 theta.true <- treat#^2/2

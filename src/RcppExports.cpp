@@ -11,20 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// bayesLasso
-List bayesLasso(arma::vec y, arma::mat X, double alpha, double tol);
-RcppExport SEXP _MDEI_bayesLasso(SEXP ySEXP, SEXP XSEXP, SEXP alphaSEXP, SEXP tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(bayesLasso(y, X, alpha, tol));
-    return rcpp_result_gen;
-END_RCPP
-}
 // setupGCV
 List setupGCV(arma::vec y, arma::mat X, arma::vec alphas);
 RcppExport SEXP _MDEI_setupGCV(SEXP ySEXP, SEXP XSEXP, SEXP alphasSEXP) {
@@ -96,7 +82,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_MDEI_bayesLasso", (DL_FUNC) &_MDEI_bayesLasso, 4},
     {"_MDEI_setupGCV", (DL_FUNC) &_MDEI_setupGCV, 3},
     {"_MDEI_update", (DL_FUNC) &_MDEI_update, 2},
     {"_MDEI_GCV", (DL_FUNC) &_MDEI_GCV, 4},
