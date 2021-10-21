@@ -54,10 +54,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
         tol = 1e-6*sd(y.partial))
 
   beta.sp <- as.vector(g1$beta)
-  #diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
-  #hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
-  errs.loo <- #lm.beta$res/(1-hii)
-    as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
+  errs.loo <- 
+    as.vector(y.partial[replaceme == 2]-X.Construct%*%beta.sp)
   
   # tic("Gathering coefficients")
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
