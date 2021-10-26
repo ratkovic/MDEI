@@ -161,7 +161,7 @@ MDEI <- function(y,
                  alpha = .9) {
   n <- length(treat)
   X <- apply(X, 2, rank)
-  X <- apply(X ,2, FUN=function(x) pnorm(x/(max(x)+1)))
+  #X <- apply(X ,2, FUN=function(x) pnorm(x/(max(x)+1)))
   if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
   
   Xmat.spline <-
