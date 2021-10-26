@@ -21,14 +21,11 @@ bs.me <- function(x, varname) {
     colnames(m1)<-paste(varname,c("linear","quadratic","cubic"),sep="_")
     return(m1)
   }
-  #sd.x <- sd(x)
-  #x <- x/sd.x
   
   b1 <- bSpline2(x, df = 3)
   colnames(b1) <- paste(varname,"spline",1:ncol(b1),sep="_")
   m1 <-
-    cbind(x, b1, ibs(x, df=3)[,-3], ibs(x, df=5)[,-5])#,
-          #x^2-1, x^3-3*x, x^4-6*x^2+3)#,bSpline2(x,df=4),bSpline2(x,df=5),bSpline2(x,df=6))
+    cbind(x, b1, ibs(x, df=3)[,-3], ibs(x, df=5)[,-5])
   colnames(m1)[1]<-paste(varname,"linear",sep="_")
   return(m1)
 }
@@ -40,10 +37,7 @@ dbs.me <- function(x) {
     return(as.matrix(1))
   if (length(unique(x)) <= 3)
     return(cbind(1, 2*x))
-  #sd.x <- sd(x)
-  #x <- x/sd.x
-  m1 <- cbind(1, dbs2(x, df = 3), bSpline(x,df=3)[,-3], bSpline(x,df=5)[,-5])#,
-              #(2*x-1)/sd.x, (3*x^2-3)/sd.x, (4*x^3-12*x)/sd.x )#,dbs2(x,df=4),dbs2(x,df=5),dbs2(x,df=6))
+  m1 <- cbind(1, dbs2(x, df = 3), bSpline(x,df=3)[,-3], bSpline(x,df=5)[,-5])
   return(m1)
   
 }
