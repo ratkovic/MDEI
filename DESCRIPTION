@@ -10,4 +10,4 @@ License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.6), ranger, splines2, MASS
 Depends: R (>= 3.5.0)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

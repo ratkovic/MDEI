@@ -15,7 +15,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   
   treat.partial <- partialOut(treat, X, replaceme)
   # treat.pscore <- treat-treat.partial#lm(treat~treat.partial, weights=1*(replaceme==1))$fit
-  y.partial <- partialOut(y, cbind(X), replaceme)
+  y.partial <- partialOut(y, cbind( X), replaceme)
   Ey.x <- y - y.partial
 
   treatmat.theta <- bs.me(treat.partial, "treatment")
@@ -38,6 +38,13 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
                 ratio = 50)
   # toc()
   
+  ##Partial out treatment?
+  for(i.p in 2:ncol(bases.obj$MConstruct)){
+    lm.p <- lm(bases.obj$MConstruct[,i.p]~treat.partial, weights=1*(replaceme==2))
+    bases.obj$MConstruct[,i.p] <- lm.p$res
+    bases.obj$MConstructDerivative[,i.p] <- bases.obj$MConstructDerivative[,i.p]-lm.p$coef[2]
+    }
+  
   n.a <- sum(replaceme == 2)
   p.a <- ncol(bases.obj$Msubsamp)
   alpha.seq <- seq(max(n.a * log(p.a), 10 * p.a), p.a, length = 10)
@@ -47,6 +54,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   X.Construct2 <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
   
   XpX.Construct <-crossprod(X.Construct1)
+  
+  #m1 <- mget(ls())
+  #save(m1,file="diagnose.Rda")
   g1 <-
     GCV(y.partial[replaceme == 1],
         X.Construct1,
@@ -151,10 +161,11 @@ MDEI <- function(y,
                  alpha = .9) {
   n <- length(treat)
   X <- apply(X, 2, rank)
+  X <- apply(X ,2, FUN=function(x) pnorm(x/(max(x)+1)))
   if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
   
   Xmat.spline <-
-    matrix(NA, nrow = n, ncol = ncol(X) * 27 + 10)
+    matrix(NA, nrow = n, ncol = ncol(X) * ncol(bs.me(rnorm(nrow(X)),"rnorm" )) + 10)
   colnames(Xmat.spline) <- paste("init",1:ncol(Xmat.spline),sep="_")
   for (i.X in 1:ncol(X)) {
     col.start <- which(is.na(Xmat.spline[1, ]))[1]
