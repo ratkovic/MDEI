@@ -28,12 +28,6 @@ bs.me <- function(x, varname) {
   m1 <-
     cbind(x, b1, ibs(x, df=3)[,-3], ibs(x, df=5)[,-5])
           
-  m2<- cbind(sin(x2), sin(2*x2), sin(3*x2),sin(x2/2), sin(x2/4),
-          sin(x2-pi/4), sin(2*x2-pi/4), sin(3*x2-pi/4),sin(x2/2-pi/4), sin(x2/4-pi/4),
-          sin(x2-pi/2), sin(2*x2-pi/2), sin(3*x2-pi/2),sin(x2/2-pi/2), sin(x2/4-pi/2),
-          sin(x2-3*pi/4), sin(2*x2-3*pi/4), sin(3*x2-pi/4),sin(x2/2-3*pi/4), sin(x2/4-3*pi/4),
-          sin(x2-pi), sin(2*x2-pi), sin(3*x2-pi),sin(x2/2-pi), sin(x2/4-pi)
-          )
   colnames(m1)[1]<-paste(varname,"linear",sep="_")
   x2 <- scale(x)
   sd.x <- sd(x)
@@ -62,16 +56,11 @@ dbs.me <- function(x) {
   x3 <- x2-1
   x4 <- x2+1
   m1 <- cbind(1, dbs2(x, df = 3), bSpline(x,df=3)[,-3], bSpline(x,df=5)[,-5])
-  m2<-cbind(cos(x2), 2*cos(2*x2), 3*cos(3*x2), .5*cos(x2/2), .25*cos(x2/4),
-            cos(x2-pi/4), 2*cos(2*x2-pi/4), 3*cos(3*x2-pi/4),.5*cos(x2/2-pi/4), .25*cos(x2/4-pi/4),
-            cos(x2-pi/2), 2*cos(2*x2-pi/2), 3*cos(3*x2-pi/2),.5*cos(x2/2-pi/2), .25*cos(x2/4-pi/2),
-            cos(x2-3*pi/4), 2*cos(2*x2-3*pi/4), 3*cos(3*x2-pi/4), .5*cos(x2/2-3*pi/4), .25*cos(x2/4-3*pi/4),
-            cos(x2-pi), 2*cos(2*x2-pi), 3*cos(3*x2-pi), .5*cos(x2/2-pi), .25*cos(x2/4-pi)
-  )
-  
-  # m2 <- cbind(x2^2-1, x2^3-3*x2, x2^4-6*x2^2+3,
-  #             x3^2-1, x3^3-3*x3, x3^4-6*x3^2+3,
-  #             x4^2-1, x4^3-3*x4, x4^4-6*x4^2+3
+  # m2 <- cbind(#x,b1,
+  #   m1,
+  #   x2^2-1, x2^3-3*x2, x2^4-6*x2^2+3,
+  #   x3^2-1, x3^3-3*x3, x3^4-6*x3^2+3,
+  #   x4^2-1, x4^3-3*x4, x4^4-6*x4^2+3
   # )
   
   m2 <- cbind(#1,dbs2(x, df = 3),
