@@ -2,7 +2,6 @@
 ### Auxiliary functions -------
 
 
-
 ## B spline functions -----
 ##  Make a bspline matrix from a vector
 bs.me <- function(x, varname) {
@@ -40,10 +39,11 @@ bs.me <- function(x, varname) {
   sd.x <- sd(x)
   x3 <- x2-1
   x4 <- x2+1
-  m2 <- cbind(x,b1,
-              x2^2-1, x2^3-3*x2, x2^4-6*x2^2+3,
-              x3^2-1, x3^3-3*x3, x3^4-6*x3^2+3,
-              x4^2-1, x4^3-3*x4, x4^4-6*x4^2+3
+  m2 <- cbind(#x,b1,
+    m1,
+    x2^2-1, x2^3-3*x2, x2^4-6*x2^2+3,
+    x3^2-1, x3^3-3*x3, x3^4-6*x3^2+3,
+    x4^2-1, x4^3-3*x4, x4^4-6*x4^2+3
   )
   m1 <- cbind(m2)
   colnames(m1) <- paste(varname,"spline",1:ncol(m1),sep="_")
@@ -74,10 +74,11 @@ dbs.me <- function(x) {
   #             x4^2-1, x4^3-3*x4, x4^4-6*x4^2+3
   # )
   
-  m2 <- cbind(1,dbs2(x, df = 3),
-              2*x2, 3*x2^2-3, 4*x2^3-12*x2,
-              2*x3, 3*x3^2-3, 4*x3^3-12*x3,
-              2*x4, 3*x4^2-3, 4*x4^3-12*x4
+  m2 <- cbind(#1,dbs2(x, df = 3),
+    m1,
+    2*x2, 3*x2^2-3, 4*x2^3-12*x2,
+    2*x3, 3*x3^2-3, 4*x3^3-12*x3,
+    2*x4, 3*x4^2-3, 4*x4^3-12*x4
   )
   m1 <- cbind(m2/sd.x )
   return(m1)
