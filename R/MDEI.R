@@ -199,14 +199,25 @@ MDEI <- function(y,
     
     for(i.inner in 1:3){
     singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat)
- 
-    theta.run[replaceme == 2, i.runs] <- singlefit.2$theta.pred
-    tau.run[replaceme == 2, i.runs] <- singlefit.2$tau.pred
-    thetavar.run[replaceme == 2, i.runs] <- singlefit.2$var.theta
-    tauvar.run[replaceme == 2, i.runs] <- singlefit.2$var.tau
-    y.partial.run[replaceme == 2, i.runs] <- singlefit.2$y.partial
-    Ey.x.run[replaceme == 2, i.runs] <- singlefit.2$Ey.x
-    errs.loo.run[replaceme == 2, i.runs] <- singlefit.2$errs.loo
+    replaceme.temp <- replaceme
+    replaceme.temp[replaceme==1] <- 3
+    replaceme.temp[replaceme==3] <- 1
+    singlefit.2cf <- fit.singlesubsample(y, treat, X, replaceme.temp, Xmat)
+    
+    theta.run[replaceme == 2, i.runs] <- 
+      .5*(singlefit.2$theta.pred+singlefit.2cf$theta.pred)
+    tau.run[replaceme == 2, i.runs] <- 
+      .5*(singlefit.2$tau.pred + singlefit.2cf$tau.pred)
+    thetavar.run[replaceme == 2, i.runs] <- 
+      .25*(singlefit.2$var.theta + singlefit.2cf$var.theta)
+    tauvar.run[replaceme == 2, i.runs] <- 
+      .25*(singlefit.2$var.tau + singlefit.2cf$var.tau)
+    y.partial.run[replaceme == 2, i.runs] <- 
+      .5*(singlefit.2$y.partial + singlefit.2cf$y.partial)
+    Ey.x.run[replaceme == 2, i.runs] <- 
+      .5*(singlefit.2$Ey.x + singlefit.2cf$Ey.x)
+    errs.loo.run[replaceme == 2, i.runs] <- 
+      .5*(singlefit.2$errs.loo + singlefit.2cf$errs.loo)
     
     coefmat <- cbind(coefmat,singlefit.2$cormat.sparse)
     replaceme <- (replaceme%%3)+1
