@@ -7,7 +7,7 @@
 ## usethis namespace: start
 #' @useDynLib MDEI
 #' @importFrom ranger ranger
-#' @importFrom splines2 bSpline dbs
+#' @importFrom splines2 bSpline dbs ibs
 #' @importFrom Rcpp sourceCpp
 #' @import stats
 #' @importFrom MASS ginv

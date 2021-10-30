@@ -9,10 +9,6 @@
 #' @export
 NULL
 
-bayesLasso <- function(y, X, alpha, tol) {
-    .Call('_MDEI_bayesLasso', PACKAGE = 'MDEI', y, X, alpha, tol)
-}
-
 setupGCV <- function(y, X, alphas) {
     .Call('_MDEI_setupGCV', PACKAGE = 'MDEI', y, X, alphas)
 }
