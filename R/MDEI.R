@@ -175,6 +175,18 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' # Coverage
 #' mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
 
+#' @return \describe{
+#' \item{tau.est}{The estimated marginal effect.}
+#' \item{CIs.tau}{Conformal Confiden.}
+#' \item{critical.values}{Conformal critical values.}
+#' \item{Ey.x}{Mean of outcome given only covariates.}
+#' \item{coefficients}{The list of all nonparameteric bases and the proportion of sample splits that they were selected.}
+#' \item{internal}{Internal objects used for development and diagnostics.}
+#'}
+#'
+#' @references Ratkovic, Marc and Dustin Tingley.  2023. "Estimation and Inference on Nonlinear and Heterogeneous Effects."  The Journal of Politics.
+#'
+#' @rdname plce
 
 MDEI <- function(y,
                  treat,
@@ -190,8 +202,9 @@ MDEI <- function(y,
     X <- rbind(X, X)
   }
   n <- length(treat)
+  X0 <- X
   X <- apply(X, 2, rank)
-  if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
+  if(length(colnames(X))!=ncol(X)) colnames(X) <- colnames(X0) <- paste("X",1:ncol(X), sep="_")
   
   Xmat.spline <-
     matrix(NA, nrow = n, ncol = ncol(X) * 27 + 10)
@@ -306,5 +319,7 @@ MDEI <- function(y,
     "coefficients"=coefs.return,
     "internal"= allobjs
   )
+  
+  class(output) <- "MDEI"
   return(output)
 }

@@ -1,6 +1,7 @@
 ####################################
 ### Auxiliary functions -------
 
+
 ## B spline functions -----
 ##  Make a bspline matrix from a vector
 bs.me <- function(x, varname) {

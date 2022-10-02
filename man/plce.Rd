@@ -4,7 +4,15 @@
 \alias{MDEI}
 \title{MDEI function}
 \usage{
-MDEI(y, treat, X, splits = 10, alpha = 0.9)
+MDEI(
+  y,
+  treat,
+  X,
+  splits = 10,
+  alpha = 0.9,
+  samplesplit = TRUE,
+  conformal = TRUE
+)
 }
 \arguments{
 \item{y}{The outcome variable, a vector.}
@@ -16,6 +24,16 @@ MDEI(y, treat, X, splits = 10, alpha = 0.9)
 \item{splits}{Number of repeated cross-fitting steps to implement.}
 
 \item{alpha}{The desired level of the confidence band.}
+}
+\value{
+\describe{
+\item{tau.est}{The estimated marginal effect.}
+\item{CIs.tau}{Conformal Confiden.}
+\item{critical.values}{Conformal critical values.}
+\item{Ey.x}{Mean of outcome given only covariates.}
+\item{coefficients}{The list of all nonparameteric bases and the proportion of sample splits that they were selected.}
+\item{internal}{Internal objects used for development and diagnostics.}
+}
 }
 \description{
 Implements the Method of Direct Estimation and Inference
@@ -36,4 +54,7 @@ cor(m1$theta.est, treat^2)
 
 # Coverage
 mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
+}
+\references{
+Ratkovic, Marc and Dustin Tingley.  2023. "Estimation and Inference on Nonlinear and Heterogeneous Effects."  The Journal of Politics.
 }

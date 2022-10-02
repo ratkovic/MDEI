@@ -3,22 +3,6 @@
 #devtools::install_github('ratkovic/MDEI/tree/development', force=TRUE)
 library(tictoc)
 library(MDEI)
-library(grf)
-library(KRLS2)
-
-plot.tsq <- function(pointest, CI){
-  cover.curr <- apply(CI-tau.true,1,prod)<0
-  plot(treat,pointest,type="n",ylim=range(m1$CIs.tau), xlab="", ylab="")
-  lines(treat,treat*0+tau.true)
-  segments(x0=treat,x1=treat,y0=CI[,1],y1=CI[,2],col=ifelse(cover.curr,
-                                                            gray(.7),
-                                                            "black")
-  )
-  
-  points(treat,pointest,pch=19,cex=.5)
-  print(mean(cover.curr))
-  
-}
 
 n <- 1000
 
@@ -35,7 +19,7 @@ y <- theta.true  + rnorm(n,sd=1)*sd(theta.true )
 
 # set.seed(100)
 tic()
-set.seed(1); m1 <- MDEI(y, treat, X, splits=100, alpha=.9)
+set.seed(1); m1 <- MDEI(y, treat, X, splits=25, alpha=.9)
 toc()
 
 
