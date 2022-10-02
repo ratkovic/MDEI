@@ -1,6 +1,6 @@
 #' Plot an MDEI Object
 #'
-#' @param obj An object of class MDEI.
+#' @param object An object of class MDEI.
 #' @param xvar The variable to plot along the x-axis.  May be `treat` for the treatment
 #' variable, the name of a column in the covariate matrix in the \code{obj}, or a numeric vector,
 #' the length of the data.   Default is \code{"treat"}.
@@ -16,7 +16,7 @@
 #'
 #'@rdname plot
 plot.MDEI <-
-  function(obj,
+  function(object,
            xvar = "treat",
            sigval = 0,
            target = "tau",
@@ -26,6 +26,7 @@ plot.MDEI <-
            ylabel = "",
            ...) {
     # Set up point estimates and CI
+    obj <- object
     pointest <- obj$tau.est
     CI <- obj$CIs.tau
     if (target == "theta") {
@@ -65,13 +66,14 @@ plot.MDEI <-
     points(xvar, pointest, pch = 19, cex = cex.point)
     print("Proporaiton of the time that the confidence interval contains sigval:")
     print(mean(cover.curr))
+    class(cover.curr) <- 'print.MDEI'
     return(cover.curr)
   }
 
 #' Summary of an MDEI Object
 #'
 #' Summary of an object of class MDEI.  
-#' @param obj An object of class MDEI.
+#' @param object An object of class MDEI.
 #' @param features Number of spline bases to include.
 #' @export
 #' 
@@ -86,8 +88,10 @@ plot.MDEI <-
 #'
 #'@rdname summary
 summary.MDEI <-
-  function(obj,
-           features = 10){
-    coeftable<- obj$coefficients[1:features,]
+  function(object,
+           features = 10,
+           ...){
+    coeftable<- object$coefficients[1:features,]
+    class(coeftable) <- 'summary.MDEI'
     return(coeftable)
   }
