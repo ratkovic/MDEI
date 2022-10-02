@@ -10,6 +10,8 @@
 \item{object}{An object of class MDEI.}
 
 \item{features}{Number of spline bases to include.}
+
+\item{...}{Additional arguments to be passed to \code{plot}.}
 }
 \value{
 \describe{

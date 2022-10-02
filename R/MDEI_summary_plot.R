@@ -1,4 +1,4 @@
-#' Plot an MDEI Object
+#' Coverage Plot for MDEI Object
 #'
 #' @param object An object of class MDEI.
 #' @param xvar The variable to plot along the x-axis.  May be `treat` for the treatment
@@ -12,11 +12,11 @@
 #' @param cex.point The size of the points in the figure.  Default is \code{0.5}.
 #' @param xlabel Label for x-axis of figure.  Default is \code{""}.
 #' @param ylabel Label for y-axis of figure.  Default is \code{""}.
-#' @param ... Additional values to be passed to \code{plot}.
+#' @param ... Additional arguments to be passed to \code{plot}.
 #' @export
 #'
-#'@rdname plot
-plot.MDEI <-
+#'@rdname coverPlot
+coverPlot <-
   function(object,
            xvar = "treat",
            sigval = 0,
@@ -67,7 +67,6 @@ plot.MDEI <-
     points(xvar, pointest, pch = 19, cex = cex.point)
     print("Proporaiton of the time that the confidence interval contains sigval:")
     print(mean(cover.curr))
-    class(cover.curr) <- 'print.MDEI'
     return(cover.curr)
   }
 
@@ -76,6 +75,7 @@ plot.MDEI <-
 #' Summary of an object of class MDEI.  
 #' @param object An object of class MDEI.
 #' @param features Number of spline bases to include.
+#' @param ... Additional arguments to be passed to \code{plot}.
 #' @export
 #' 
 #' @return \describe{
