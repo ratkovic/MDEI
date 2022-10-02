@@ -18,7 +18,7 @@
 \item{coeftable}{A table with three columns: the names of selected spline interactions, the average coefficient, and
 proportion of time it was included in the model. Averages over taken over subsamples in the
 split sample strategy.Note that the coefficients are interactions between
-spline interactions that can be accessed through obj$internal$Xmat.spline.}
+spline interactions that can be accessed through \code{obj$internal$Xmat.spline}.}
 }
 }
 \description{

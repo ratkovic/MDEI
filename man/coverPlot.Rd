@@ -29,7 +29,7 @@ the length of the data.   Default is \code{"treat"}.}
 `theta`, is the portion of the conditional mean of the outcome that is a function of the treatment and the outcome.}
 
 \item{colors}{A vector with two elements.  The first is the color of the confidence interval at points
-where the conformal interval does not contain `sigval`, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.}
+where the conformal interval does not contain \code{sigval}, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.}
 
 \item{cex.point}{The size of the points in the figure.  Default is \code{0.5}.}
 

@@ -8,7 +8,7 @@
 #' @param target Either tau` or `theta`.  The first, `tau`, is the marginal effect at each point, while the second
 #' `theta`, is the portion of the conditional mean of the outcome that is a function of the treatment and the outcome.
 #' @param colors A vector with two elements.  The first is the color of the confidence interval at points
-#' where the conformal interval does not contain `sigval`, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.
+#' where the conformal interval does not contain \code{sigval}, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.
 #' @param cex.point The size of the points in the figure.  Default is \code{0.5}.
 #' @param xlabel Label for x-axis of figure.  Default is \code{""}.
 #' @param ylabel Label for y-axis of figure.  Default is \code{""}.
@@ -82,7 +82,7 @@ coverPlot <-
 #' \item{coeftable}{A table with three columns: the names of selected spline interactions, the average coefficient, and
 #' proportion of time it was included in the model. Averages over taken over subsamples in the
 #' split sample strategy.Note that the coefficients are interactions between
-#' spline interactions that can be accessed through obj$internal$Xmat.spline.}
+#' spline interactions that can be accessed through \code{obj$internal$Xmat.spline}.}
 #'}
 #'
 #'

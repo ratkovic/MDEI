@@ -33,7 +33,7 @@ normal approximation.  Default is \code{TRUE}.}
 \value{
 \describe{
 \item{tau.est}{The estimated marginal effect.}
-\item{CIs.tau}{Conformal Confiden.}
+\item{CIs.tau}{Upper and lower values of conformal confidence band.}
 \item{critical.values}{Conformal critical values.}
 \item{Ey.x}{Mean of outcome given only covariates.}
 \item{coefficients}{The list of all nonparametric bases and the proportion of sample splits that they were selected.}

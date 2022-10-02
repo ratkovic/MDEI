@@ -7,3 +7,7 @@
 \description{
 MDEI estimates  effects.
 }
+\author{
+\strong{Maintainer}: Marc Ratkovic \email{ratkovic@princeton.edu}
+
+}
