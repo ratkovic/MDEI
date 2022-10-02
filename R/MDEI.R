@@ -187,7 +187,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' \item{CIs.tau}{Conformal Confiden.}
 #' \item{critical.values}{Conformal critical values.}
 #' \item{Ey.x}{Mean of outcome given only covariates.}
-#' \item{coefficients}{The list of all nonparameteric bases and the proportion of sample splits that they were selected.}
+#' \item{coefficients}{The list of all nonparametric bases and the proportion of sample splits that they were selected.}
 #' \item{internal}{Internal objects used for development and diagnostics.}
 #'}
 #'
