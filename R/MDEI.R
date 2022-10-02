@@ -162,14 +162,18 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @export
 #'
 #' @examples
-#' n<-200
+#' n<-100
 #'
 #' X <- matrix(rnorm(n*3), nrow = n)
 #' treat <- rnorm(n)
 #' y <- treat^2 + X[,2] + rnorm(n)
 #'
+#' # Be sure to run with more splits than this.  We recommend
+#' # at least 10-50 initially, for exploratory analyses, with several hundred for 
+#' # publication quality. For large sample sizes, these numbers may be adjusted down.
+#' # These are only recommendations.
 #' set.seed(1)
-#' m1 <- MDEI(y, treat, X, splits=5, alpha=.9)
+#' m1 <- MDEI(y, treat, X, splits=3, alpha=.9)
 #'
 #' # Accuracy
 #' cor(m1$tau.est, treat*2)
