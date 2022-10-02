@@ -36,7 +36,7 @@ normal approximation.  Default is \code{TRUE}.}
 \item{CIs.tau}{Conformal Confiden.}
 \item{critical.values}{Conformal critical values.}
 \item{Ey.x}{Mean of outcome given only covariates.}
-\item{coefficients}{The list of all nonparameteric bases and the proportion of sample splits that they were selected.}
+\item{coefficients}{The list of all nonparametric bases and the proportion of sample splits that they were selected.}
 \item{internal}{Internal objects used for development and diagnostics.}
 }
 }
@@ -44,14 +44,18 @@ normal approximation.  Default is \code{TRUE}.}
 Implements the Method of Direct Estimation and Inference
 }
 \examples{
-n<-200
+n<-100
 
 X <- matrix(rnorm(n*3), nrow = n)
 treat <- rnorm(n)
 y <- treat^2 + X[,2] + rnorm(n)
 
+# Be sure to run with more splits than this.  We recommend
+# at least 10-50 initially, for exploratory analyses, with several hundred for 
+# publication quality. For large sample sizes, these numbers may be adjusted down.
+# These are only recommendations.
 set.seed(1)
-m1 <- MDEI(y, treat, X, splits=5, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=3, alpha=.9)
 
 # Accuracy
 cor(m1$tau.est, treat*2)
