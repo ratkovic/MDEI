@@ -1,22 +1,26 @@
-## New approach.  By split:
-## 3: Partial out, learn bases
-## 1: Estimation
-## 2: Conformal
-## Then switch 'er up.
-
 ## Primary fitting function; wrapper function for this one is below
-fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
+fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0) {
   ## Partial out X's ----
   y <- y0
   treat <- treat0
   X <- X0
   replaceme <- replaceme0
   Xmat <- Xmat0
+  samplesplit <- samplesplit0
   
+  ses.theta <- ses.tau <- NULL
   treat.partial <- partialOut(treat, X, replaceme)
-  # treat.pscore <- treat-treat.partial#lm(treat~treat.partial, weights=1*(replaceme==1))$fit
-  y.partial <- partialOut(y, cbind( X), replaceme)
+  y.partial <- partialOut(y, cbind(X), replaceme)
+  if(!samplesplit){
+    treat.partial <- .5*(treat.partial[replaceme==1]+treat.partial[replaceme==2])
+    y.partial <- .5*(y.partial[replaceme==1]+y.partial[replaceme==2])
+    treat.partial <- c(treat.partial, treat.partial)
+    y.partial <- c(y.partial, y.partial)
+    
+  }
   Ey.x <- y - y.partial
+  
+  
 
   treatmat.theta <- bs.me(treat.partial, "treatment")
   treatmat.tau <- dbs.me(treat.partial)
@@ -36,14 +40,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
                 treatmat.theta,
                 treatmat.tau,
                 ratio = 50)
-  # toc()
   
-  ##Partial out treatment?
-  for(i.p in 2:ncol(bases.obj$MConstruct)){
-    lm.p <- lm(bases.obj$MConstruct[,i.p]~treat.partial, weights=1*(replaceme==2))
-    bases.obj$MConstruct[,i.p] <- lm.p$res
-    bases.obj$MConstructDerivative[,i.p] <- bases.obj$MConstructDerivative[,i.p]-lm.p$coef[2]
-    }
+  ## 
   
   n.a <- sum(replaceme == 2)
   p.a <- ncol(bases.obj$Msubsamp)
@@ -53,19 +51,41 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
   X.Construct1 <- cbind(1, bases.obj$MConstruct)[replaceme==1,]
   X.Construct2 <- cbind(1, bases.obj$MConstruct)[replaceme==2,]
   
-  XpX.Construct <-crossprod(X.Construct1)
-  
-  #m1 <- mget(ls())
-  #save(m1,file="diagnose.Rda")
+  XpX.Construct <-crossprod(X.Construct2)
   g1 <-
-    GCV(y.partial[replaceme == 1],
-        X.Construct1,
+    GCV(y.partial[replaceme == 2],
+        X.Construct2,
         alphas = alpha.seq,
         tol = 1e-6*sd(y.partial))
+  
 
   beta.sp <- as.vector(g1$beta)
-  errs.loo <- 
-    as.vector(y.partial[replaceme == 2]-X.Construct%*%beta.sp)
+  diag(XpX.Construct) <- diag(XpX.Construct) + g1$Etausqinv
+  hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
+  errs.loo <- #lm.beta$res/(1-hii)
+    as.vector((y.partial[replaceme == 2]-X.Construct%*%beta.sp)/(1-hii))
+
+  ## Try loo tau estimates
+  y.loo <- X.Construct%*%beta.sp+errs.loo*sample(c(-1,1),length(errs.loo),TRUE)
+  g2 <-
+    GCV(y.loo,
+        X.Construct2,
+        alphas = alpha.seq,
+        tol = 1e-6*sd(y.partial))
+  #beta.sp <- as.vector(g2$beta)
+  XpX.Construct <-crossprod(X.Construct2)
+  diag(XpX.Construct) <- diag(XpX.Construct) + g2$Etausqinv
+  hii <- rowSums((X.Construct%*%ginv(XpX.Construct))*X.Construct)
+  errs.loo <- errs.loo/(1-hii)
+  
+  if(!samplesplit)  {
+    errs.insamp <- as.vector(y.partial[replaceme == 2]-X.Construct%*%beta.sp)
+    var.beta <- ginv(XpX.Construct) %*% (crossprod( X.Construct1*errs.insamp))%*%ginv(XpX.Construct)
+    ses.theta <- rowSums((X.Construct%*%var.beta)*X.Construct)^.5
+    X.ConstructDerivative <- cbind(1, bases.obj$MConstructDerivative)
+    ses.tau <- rowSums((X.ConstructDerivative[replaceme==2,]%*%var.beta)*X.ConstructDerivative[replaceme==2,])^.5
+  }
+  
   
   # tic("Gathering coefficients")
   beta.sparse <- beta.sp[-1][abs(beta.sp[-1]) > 1e-2*sd(y)]
@@ -118,7 +138,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
       "y.partial" = y.partial[replaceme == 2],
       "Ey.x" = Ey.x[replaceme == 2],
       "errs.loo" = errs.loo,
-      "cormat.sparse" = cormat.sparse
+      "cormat.sparse" = cormat.sparse,
+      "ses.tau" = ses.tau,
+      "ses.theta" = ses.theta
     )
   
   
@@ -153,19 +175,39 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0) {
 #' # Coverage
 #' mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
 
+#' @return \describe{
+#' \item{tau.est}{The estimated marginal effect.}
+#' \item{CIs.tau}{Conformal Confiden.}
+#' \item{critical.values}{Conformal critical values.}
+#' \item{Ey.x}{Mean of outcome given only covariates.}
+#' \item{coefficients}{The list of all nonparameteric bases and the proportion of sample splits that they were selected.}
+#' \item{internal}{Internal objects used for development and diagnostics.}
+#'}
+#'
+#' @references Ratkovic, Marc and Dustin Tingley.  2023. "Estimation and Inference on Nonlinear and Heterogeneous Effects."  The Journal of Politics.
+#'
+#' @rdname plce
 
 MDEI <- function(y,
                  treat,
                  X,
                  splits = 10,
-                 alpha = .9) {
+                 alpha = .9,
+                 samplesplit = TRUE,
+                 conformal = TRUE) {
+  if(samplesplit==FALSE){
+    splits <- 1
+    y <- c(y,y)
+    treat<- c(treat,treat)
+    X <- rbind(X, X)
+  }
   n <- length(treat)
+  X0 <- X
   X <- apply(X, 2, rank)
-  #X <- apply(X ,2, FUN=function(x) pnorm(x/(max(x)+1)))
-  if(length(colnames(X))!=ncol(X)) colnames(X) <- paste("X",1:ncol(X), sep="_")
+  if(length(colnames(X))!=ncol(X)) colnames(X) <- colnames(X0) <- paste("X",1:ncol(X), sep="_")
   
   Xmat.spline <-
-    matrix(NA, nrow = n, ncol = ncol(X) * ncol(bs.me(rnorm(nrow(X)),"rnorm" )) + 10)
+    matrix(NA, nrow = n, ncol = ncol(X) * 27 + 10)
   colnames(Xmat.spline) <- paste("init",1:ncol(Xmat.spline),sep="_")
   for (i.X in 1:ncol(X)) {
     col.start <- which(is.na(Xmat.spline[1, ]))[1]
@@ -194,12 +236,22 @@ MDEI <- function(y,
   ## Now, start split sample here ----
   
   for (i.runs in 1:splits) {
-    replaceme <- rep(sample(1:3), n/2)[1:n]
-    replaceme <- sample(replaceme)
+    replaceme <- rep(1, n)
+    replaceme[1:floor(n / 2)] <- 2
+    if(samplesplit==TRUE) replaceme <- sample(replaceme)
     
-    for(i.inner in 1:3){
-    singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat)
- 
+    singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat, samplesplit)
+    singlefit.1 <-
+      fit.singlesubsample(y, treat, X, 3 - replaceme, Xmat, samplesplit)
+    #
+    theta.run[replaceme == 1, i.runs] <- singlefit.1$theta.pred
+    tau.run[replaceme == 1, i.runs] <- singlefit.1$tau.pred
+    thetavar.run[replaceme == 1, i.runs] <- singlefit.1$var.theta
+    tauvar.run[replaceme == 1, i.runs] <- singlefit.1$var.tau
+    y.partial.run[replaceme == 1, i.runs] <- singlefit.1$y.partial
+    Ey.x.run[replaceme == 1, i.runs] <- singlefit.1$Ey.x
+    errs.loo.run[replaceme == 1, i.runs] <- singlefit.1$errs.loo
+      
     theta.run[replaceme == 2, i.runs] <- singlefit.2$theta.pred
     tau.run[replaceme == 2, i.runs] <- singlefit.2$tau.pred
     thetavar.run[replaceme == 2, i.runs] <- singlefit.2$var.theta
@@ -208,27 +260,45 @@ MDEI <- function(y,
     Ey.x.run[replaceme == 2, i.runs] <- singlefit.2$Ey.x
     errs.loo.run[replaceme == 2, i.runs] <- singlefit.2$errs.loo
     
-    coefmat <- cbind(coefmat,singlefit.2$cormat.sparse)
-    replaceme <- (replaceme%%3)+1
-    }
+    coefmat <- cbind(coefmat,singlefit.1$cormat.sparse,singlefit.2$cormat.sparse)
+    
     cat("Finished with cross-fit", i.runs, "\n")
   }
   
   se.theta <-
     (apply(thetavar.run, 1, hl.mean) + apply(theta.run, 1, hl.var)) ^ .5
   # ts.theta <- (y.partial.run - theta.run) / se.theta
+  if(!samplesplit) {
+    se.theta <- c(singlefit.1$ses.theta, singlefit.1$ses.theta)
+   se.theta <-
+       (se.theta^2 + apply(thetavar.run, 1, hl.mean)) ^ .5
+  }
    ts.theta <- errs.loo.run / se.theta
   
   critical.value.theta <- quantile(abs(ts.theta), alpha)
-  
+  if(conformal == FALSE) critical.value.theta <- qnorm((1-alpha)/2)
   CIs.theta <-
     apply(y.partial.run, 1, hl.mean) + critical.value.theta * cbind(-se.theta, se.theta)
   
   se.tau <- (apply(tauvar.run, 1, hl.mean) + apply(tau.run, 1, hl.var)) ^
     .5
+  if(!samplesplit) {
+    se.tau <- c(singlefit.1$ses.tau, singlefit.1$ses.tau)
+     se.tau <- (se.tau^2 + apply(tauvar.run, 1, hl.var)) ^ .5
+  }
+  
   critical.value.tau <- critical.value.theta+1#(critical.value.theta ^ 2 + 1) ^ .5
+  if(conformal == FALSE) critical.value.tau <- qnorm((1-alpha)/2)
+  
   CIs.tau <-
     rowMeans(tau.run) + critical.value.tau * cbind(-se.tau, se.tau)
+  
+  if(!samplesplit){
+    CIs.tau <- CIs.tau[replaceme==1,]
+    CIs.theta <- CIs.theta[replaceme==1,]
+    tau.run <- as.matrix(tau.run[replaceme==1,])
+    theta.run <- as.matrix(theta.run[replaceme==1, ])
+  }
   
   coefs.ave <- sort(tapply(coefmat[4,],colnames(coefmat), sum))/(splits*2)
   prop.count <- sort(tapply(coefmat[4,],colnames(coefmat), length))/(splits*2)
@@ -249,5 +319,7 @@ MDEI <- function(y,
     "coefficients"=coefs.return,
     "internal"= allobjs
   )
+  
+  class(output) <- "MDEI"
   return(output)
 }
