@@ -10,4 +10,10 @@ MDEI estimates  effects.
 \author{
 \strong{Maintainer}: Marc Ratkovic \email{ratkovic@princeton.edu}
 
+Authors:
+\itemize{
+  \item Nithin Kavi \email{nithinkavi@college.harvard.edu}
+  \item Dustin Tingley \email{dtingley@g.harvard.edu}
+}
+
 }
