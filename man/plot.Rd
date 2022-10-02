@@ -5,7 +5,7 @@
 \title{Plot an MDEI Object}
 \usage{
 \method{plot}{MDEI}(
-  obj,
+  object,
   xvar = "treat",
   sigval = 0,
   target = "tau",
@@ -17,7 +17,7 @@
 )
 }
 \arguments{
-\item{obj}{An object of class MDEI.}
+\item{object}{An object of class MDEI.}
 
 \item{xvar}{The variable to plot along the x-axis.  May be `treat` for the treatment
 variable, the name of a column in the covariate matrix in the \code{obj}, or a numeric vector,
@@ -30,6 +30,8 @@ the length of the data.   Default is \code{"treat"}.}
 
 \item{colors}{A vector with two elements.  The first is the color of the confidence interval at points
 where the conformal interval does not contain `sigval`, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.}
+
+\item{cex.point}{The size of the points in the figure.  Default is \code{0.5}.}
 
 \item{xlabel}{Label for x-axis of figure.  Default is \code{""}.}
 

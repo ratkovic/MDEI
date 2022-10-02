@@ -4,10 +4,10 @@
 \alias{summary.MDEI}
 \title{Summary of an MDEI Object}
 \usage{
-\method{summary}{MDEI}(obj, features = 10)
+\method{summary}{MDEI}(object, features = 10, ...)
 }
 \arguments{
-\item{obj}{An object of class MDEI.}
+\item{object}{An object of class MDEI.}
 
 \item{features}{Number of spline bases to include.}
 }

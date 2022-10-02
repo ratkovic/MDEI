@@ -9,6 +9,7 @@
 #' `theta`, is the portion of the condtional mean of the outcome that is a function of the treatment and the outcome.
 #' @param colors A vector with two elements.  The first is the color of the confidence interval at points
 #' where the conformal interval does not contain `sigval`, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.
+#' @param cex.point The size of the points in the figure.  Default is \code{0.5}.
 #' @param xlabel Label for x-axis of figure.  Default is \code{""}.
 #' @param ylabel Label for y-axis of figure.  Default is \code{""}.
 #' @param ... Additional values to be passed to \code{plot}.
