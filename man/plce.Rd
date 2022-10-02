@@ -24,6 +24,11 @@ MDEI(
 \item{splits}{Number of repeated cross-fitting steps to implement.}
 
 \item{alpha}{The desired level of the confidence band.}
+
+\item{conformal}{Whether to generate a conformal bands or use a critical value from the
+normal approximation.  Default is \code{TRUE}.}
+
+\item{sampleslplit}{Whether to use a sample splitting approach. Default is \code{TRUE}.}
 }
 \value{
 \describe{

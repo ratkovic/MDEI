@@ -1,9 +1,17 @@
 #' Plot an MDEI Object
 #'
-#' Plots an object of class MDEI
 #' @param obj An object of class MDEI.
-#' @param nvars Label for y-axis of figure.  Default is \code{""}.
-#' @param ... Additional values to be passed to \code{summary}.
+#' @param xvar The variable to plot along the x-axis.  May be `treat` for the treatment
+#' variable, the name of a column in the covariate matrix in the \code{obj}, or a numeric vector,
+#' the length of the data.   Default is \code{"treat"}.
+#' @param sigval The value to see if it is covered by the conformal interval. Either a single value or a vector.   Default is \code{0}.
+#' @param target Either tau` or `theta`.  The first, `tau`, is the marginal effect at each point, while the second
+#' `theta`, is the portion of the condtional mean of the outcome that is a function of the treatment and the outcome.
+#' @param colors A vector with two elements.  The first is the color of the confidence interval at points
+#' where the conformal interval does not contain `sigval`, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.
+#' @param xlabel Label for x-axis of figure.  Default is \code{""}.
+#' @param ylabel Label for y-axis of figure.  Default is \code{""}.
+#' @param ... Additional values to be passed to \code{plot}.
 #' @export
 #'
 #'@rdname plot

@@ -19,10 +19,24 @@
 \arguments{
 \item{obj}{An object of class MDEI.}
 
-\item{...}{Additional values to be passed to \code{summary}.}
+\item{xvar}{The variable to plot along the x-axis.  May be `treat` for the treatment
+variable, the name of a column in the covariate matrix in the \code{obj}, or a numeric vector,
+the length of the data.   Default is \code{"treat"}.}
 
-\item{nvars}{Label for y-axis of figure.  Default is \code{""}.}
+\item{sigval}{The value to see if it is covered by the conformal interval. Either a single value or a vector.   Default is \code{0}.}
+
+\item{target}{Either tau` or `theta`.  The first, `tau`, is the marginal effect at each point, while the second
+`theta`, is the portion of the condtional mean of the outcome that is a function of the treatment and the outcome.}
+
+\item{colors}{A vector with two elements.  The first is the color of the confidence interval at points
+where the conformal interval does not contain `sigval`, the second the color where it does.   Default is \code{c(gray(.7), gray(0))}.}
+
+\item{xlabel}{Label for x-axis of figure.  Default is \code{""}.}
+
+\item{ylabel}{Label for y-axis of figure.  Default is \code{""}.}
+
+\item{...}{Additional values to be passed to \code{plot}.}
 }
 \description{
-Plots an object of class MDEI
+Plot an MDEI Object
 }

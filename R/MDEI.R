@@ -156,6 +156,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @param X A matrix of covariates.
 #' @param splits Number of repeated cross-fitting steps to implement.
 #' @param alpha The desired level of the confidence band.
+#' @param sampleslplit Whether to use a sample splitting approach. Default is \code{TRUE}.
+#' @param conformal Whether to generate a conformal bands or use a critical value from the
+#' normal approximation.  Default is \code{TRUE}.
 #' @export
 #'
 #' @examples

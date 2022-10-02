@@ -11,5 +11,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @import stats
 #' @importFrom MASS ginv
+#' @importFrom grDevices gray
+#' @importFrom graphics lines points segments
 ## usethis namespace: end
 NULL
