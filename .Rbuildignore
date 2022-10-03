@@ -18,3 +18,4 @@ README_files
 ^\.ccache$
 ^tic\.R$
 ^codecov\.yml$
+^cran-comments\.md$
