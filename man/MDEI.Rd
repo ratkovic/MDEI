@@ -44,7 +44,7 @@ normal approximation.  Default is \code{TRUE}.}
 Implements the Method of Direct Estimation and Inference
 }
 \examples{
-\dontrun{
+\donttest{
 n <- 200
 
 X <- matrix(rnorm(n*3), nrow = n)

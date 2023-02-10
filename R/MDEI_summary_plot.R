@@ -15,6 +15,7 @@
 #' @param ... Additional arguments to be passed to \code{plot}.
 #' @export
 #'
+#'@return No return value.
 #'@rdname coverPlot
 coverPlot <-
   function(object,

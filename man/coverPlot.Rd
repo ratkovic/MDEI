@@ -39,6 +39,9 @@ where the conformal interval does not contain \code{sigval}, the second the colo
 
 \item{...}{Additional arguments to be passed to \code{plot}.}
 }
+\value{
+No return value.
+}
 \description{
 Coverage Plot for MDEI Object
 }

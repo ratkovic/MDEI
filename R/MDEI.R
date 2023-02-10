@@ -162,7 +162,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' n <- 200
 #'
 #' X <- matrix(rnorm(n*3), nrow = n)
