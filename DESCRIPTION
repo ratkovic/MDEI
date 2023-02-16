@@ -1,15 +1,36 @@
-Package: MDEI
 Type: Package
+Package: MDEI
 Title: Implementing the Method of Direct Estimation and Inference
 Version: 1.0
 Date: 2023-02-10
-Author: Marc Ratkovic <ratkovic@princeton.edu> [aut, cre], 
-    Dustin Tingley <dtingley@gov.harvard.edu> [aut],
-    Nithin Kavi <nithinkavi@college.harvard.edu> [aut]
+Author: Marc Ratkovic <ratkovic@princeton.edu> [aut, cre], Dustin Tingley
+    <dtingley@gov.harvard.edu> [aut], Nithin Kavi
+    <nithinkavi@college.harvard.edu> [aut]
 Maintainer: Marc Ratkovic <ratkovic@princeton.edu>
-Description: Causal and statistical inference on a nonparametric treatment effect curve requires care in both estimation and inference.  This package, 'MDEI', implements the Method of Direct Information and Inference from Ratkovic and Tingley (2023) <[https://ratkovic.scholar.princeton.edu/publications/estimation-and-inference-nonlinear-andheterogeneous-effects]https://ratkovic.scholar.princeton.edu/publications/estimation-and-inference-nonlinear-andheterogeneous-effects>. The method takes an outcome, variable of theoretical interest (treatment), and set of covariates and then returns a partial derivative (marginal effect) of the treatment variable at each point along with uncertainty intervals. The approach offers two advances. First, a split-sample approach is used as a guard against overfitting. Second, the method uses a data-driven interval derived from conformal inference, rather than relying on a normality assumption on the error terms.
+Description: Causal and statistical inference on a nonparametric treatment
+    effect curve requires care in both estimation and inference.  This
+    package, 'MDEI', implements the Method of Direct Information and
+    Inference from Ratkovic and Tingley (2023)
+    <[https://ratkovic.scholar.princeton.edu/publications/estimation-and-inference-nonlinear-andheterogeneous-effects]https://ratkovic.scholar.princeton.edu/publications/estimation-and-inference-nonlinear-andheterogeneous-effects>.
+    The method takes an outcome, variable of theoretical interest
+    (treatment), and set of covariates and then returns a partial
+    derivative (marginal effect) of the treatment variable at each point
+    along with uncertainty intervals. The approach offers two advances.
+    First, a split-sample approach is used as a guard against overfitting.
+    Second, the method uses a data-driven interval derived from conformal
+    inference, rather than relying on a normality assumption on the error
+    terms.
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.6), ranger, splines2, MASS, grDevices
-Depends: R (>= 3.5.0)
-LinkingTo: Rcpp, RcppArmadillo
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    grDevices,
+    MASS,
+    ranger,
+    Rcpp (>= 1.0.6),
+    splines2
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo
+Encoding: UTF-8
 RoxygenNote: 7.2.3
