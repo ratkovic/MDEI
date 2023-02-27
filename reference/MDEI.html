@@ -156,13 +156,13 @@ normal approximation.  Default is <code>TRUE</code>.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Accuracy</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">tau.est</span>, <span class="va">treat</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8996818</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8822163</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">theta.est</span>, <span class="va">treat</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.9228025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.9206856</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Coverage</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">CIs.tau</span><span class="op">-</span><span class="fl">2</span><span class="op">*</span><span class="va">treat</span>,<span class="fl">1</span>,<span class="va">prod</span><span class="op">)</span><span class="op">&lt;</span><span class="fl">0</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.91</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
