@@ -7,14 +7,14 @@ Author: Marc Ratkovic <ratkovic@princeton.edu> [aut, cre], Dustin Tingley
     <dtingley@gov.harvard.edu> [aut], Nithin Kavi
     <nithinkavi@college.harvard.edu> [aut]
 Maintainer: Marc Ratkovic <ratkovic@princeton.edu>
-Description: Causal and statistical inference on a nonparametric treatment
+Description: Causal and statistical inference on an arbitrary treatment
     effect curve requires care in both estimation and inference.  This
     package, implements the Method of Direct Estimation and Inference.
     The method takes an outcome, variable of theoretical interest
-    (treatment), and set of covariates and then returns a partial
+    (treatment), and set of variables and then returns a partial
     derivative (marginal effect) of the treatment variable at each point
     along with uncertainty intervals. The approach offers two advances.
-    First, a split-sample approach is used as a guard against overfitting.
+    First, a split-sample approach is used as a guard against over-fitting.
     Second, the method uses a data-driven interval derived from conformal
     inference, rather than relying on a normality assumption on the error
     terms.
