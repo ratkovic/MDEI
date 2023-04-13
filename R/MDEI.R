@@ -164,7 +164,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @examples
 #' n <- 100
 #'
-#' X <- matrix(rnorm(n*3), nrow = n)
+#' X <- matrix(rnorm(n*2), nrow = n)
 #' treat <- rnorm(n)
 #' y <- treat^2 + X[,2] + rnorm(n)
 #'

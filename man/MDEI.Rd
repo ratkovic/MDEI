@@ -46,7 +46,7 @@ Implements the Method of Direct Estimation and Inference
 \examples{
 n <- 100
 
-X <- matrix(rnorm(n*3), nrow = n)
+X <- matrix(rnorm(n*2), nrow = n)
 treat <- rnorm(n)
 y <- treat^2 + X[,2] + rnorm(n)
 
