@@ -55,7 +55,7 @@ y <- treat^2 + X[,2] + rnorm(n)
 # publication quality. For large sample sizes, these numbers may be adjusted down.
 # These are only recommendations.
 set.seed(1)
-m1 <- MDEI(y, treat, X, splits=3, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=1, alpha=.9)
 
 # Accuracy
 cor(m1$tau.est, treat*2)
