@@ -120,8 +120,7 @@ normal approximation.  Default is <code>TRUE</code>.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">treat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span></span>
@@ -132,38 +131,20 @@ normal approximation.  Default is <code>TRUE</code>.</p></dd>
 <span class="r-in"><span><span class="co"># publication quality. For large sample sizes, these numbers may be adjusted down.</span></span></span>
 <span class="r-in"><span><span class="co"># These are only recommendations.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu">MDEI</span><span class="op">(</span><span class="va">y</span>, <span class="va">treat</span>, <span class="va">X</span>, splits<span class="op">=</span><span class="fl">20</span>, alpha<span class="op">=</span><span class="fl">.9</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu">MDEI</span><span class="op">(</span><span class="va">y</span>, <span class="va">treat</span>, <span class="va">X</span>, splits<span class="op">=</span><span class="fl">3</span>, alpha<span class="op">=</span><span class="fl">.9</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 7 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 9 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 10 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 11 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 13 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 14 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 15 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 16 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 17 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 18 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 19 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Finished with cross-fit 20 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Accuracy</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">tau.est</span>, <span class="va">treat</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8822163</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8023559</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">theta.est</span>, <span class="va">treat</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.9206856</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8328168</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Coverage</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">CIs.tau</span><span class="op">-</span><span class="fl">2</span><span class="op">*</span><span class="va">treat</span>,<span class="fl">1</span>,<span class="va">prod</span><span class="op">)</span><span class="op">&lt;</span><span class="fl">0</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.91</span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.85</span>
 </code></pre></div>
     </div>
   </div>
