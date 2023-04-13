@@ -162,8 +162,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @export
 #'
 #' @examples
-#' \donttest{
-#' n <- 200
+#' n <- 100
 #'
 #' X <- matrix(rnorm(n*3), nrow = n)
 #' treat <- rnorm(n)
@@ -174,7 +173,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' # publication quality. For large sample sizes, these numbers may be adjusted down.
 #' # These are only recommendations.
 #' set.seed(1)
-#' m1 <- MDEI(y, treat, X, splits=20, alpha=.9)
+#' m1 <- MDEI(y, treat, X, splits=3, alpha=.9)
 #'
 #' # Accuracy
 #' cor(m1$tau.est, treat*2)
@@ -182,7 +181,7 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #'
 #' # Coverage
 #' mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
-#' }
+
 
 #' @return \describe{
 #' \item{tau.est}{The estimated marginal effect.}

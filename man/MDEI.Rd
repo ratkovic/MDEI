@@ -44,8 +44,7 @@ normal approximation.  Default is \code{TRUE}.}
 Implements the Method of Direct Estimation and Inference
 }
 \examples{
-\donttest{
-n <- 200
+n <- 100
 
 X <- matrix(rnorm(n*3), nrow = n)
 treat <- rnorm(n)
@@ -56,7 +55,7 @@ y <- treat^2 + X[,2] + rnorm(n)
 # publication quality. For large sample sizes, these numbers may be adjusted down.
 # These are only recommendations.
 set.seed(1)
-m1 <- MDEI(y, treat, X, splits=20, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=3, alpha=.9)
 
 # Accuracy
 cor(m1$tau.est, treat*2)
@@ -64,7 +63,6 @@ cor(m1$theta.est, treat^2)
 
 # Coverage
 mean(apply(m1$CIs.tau-2*treat,1,prod)<0)
-}
 }
 \references{
 Ratkovic, Marc and Dustin Tingley.  2023. "Estimation and Inference on Nonlinear and Heterogeneous Effects."  The Journal of Politics.
