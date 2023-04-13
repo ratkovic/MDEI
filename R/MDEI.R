@@ -164,9 +164,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @examples
 #' n <- 100
 #'
-#' X <- matrix(rnorm(n*2), nrow = n)
+#' X <- matrix(rnorm(n*1), nrow = n)
 #' treat <- rnorm(n)
-#' y <- treat^2 + X[,2] + rnorm(n)
+#' y <- treat^2 + X[,1] + rnorm(n)
 #'
 #' # Be sure to run with more splits than this.  We recommend
 #' # at least 10-50 initially, for exploratory analyses, with several hundred for 
