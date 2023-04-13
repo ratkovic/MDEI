@@ -2,11 +2,20 @@ Type: Package
 Package: MDEI
 Title: Implementing the Method of Direct Estimation and Inference
 Version: 1.0
-Date: 2023-02-10
-Author: Marc Ratkovic <ratkovic@princeton.edu> [aut, cre], Dustin Tingley
-    <dtingley@gov.harvard.edu> [aut], Nithin Kavi
-    <nithinkavi@college.harvard.edu> [aut]
-Maintainer: Marc Ratkovic <ratkovic@princeton.edu>
+Date: 2023-04-12
+Authors@R: 
+  c(person(given = "Marc",
+           family = "Ratkovic",
+           role = c("aut", "cre"),
+           email = "ratkovic@princeton.edu"),
+    person(given = "Dustin",
+           family = "Tingley",
+           email = "dtingley@gov.harvard.edu",
+           role = "ctb"),
+    person(given = "Nithin",
+           family = "Kavi",
+	   email = "nithinkavi@college.harvard.edu",
+           role = "aut"))
 Description: Causal and statistical inference on an arbitrary treatment
     effect curve requires care in both estimation and inference.  This
     package, implements the Method of Direct Estimation and Inference.
