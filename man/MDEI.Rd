@@ -11,7 +11,8 @@ MDEI(
   splits = 10,
   alpha = 0.9,
   samplesplit = TRUE,
-  conformal = TRUE
+  conformal = TRUE,
+  nthreads.ranger = NULL
 )
 }
 \arguments{
@@ -28,7 +29,10 @@ MDEI(
 \item{samplesplit}{Whether to use a sample splitting approach. Default is \code{TRUE}.}
 
 \item{conformal}{Whether to generate a conformal bands or use a critical value from the
-normal approximation.  Default is \code{TRUE}.}
+normal approximation.  Default is \code{TRUE}..}
+
+\item{nthreads.ranger}{Number of threads used internally by the \code{ranger} function 
+for random forests.  Default is \code{NULL}.}
 }
 \value{
 \describe{
@@ -54,8 +58,10 @@ y <- treat^2 + X[,1] + rnorm(n)
 # at least 10-50 initially, for exploratory analyses, with several hundred for 
 # publication quality. For large sample sizes, these numbers may be adjusted down.
 # These are only recommendations.
+# Threads are set to 1 to pass CRAN checks, but we suggest leaving it at the default
+# which ranger takse as the total number available.
 set.seed(1)
-m1 <- MDEI(y, treat, X, splits=1, alpha=.9)
+m1 <- MDEI(y, treat, X, splits=1, alpha=.9, nthreads.ranger = 1)
 
 # Accuracy
 cor(m1$tau.est, treat*2)

@@ -1,5 +1,5 @@
 ## Primary fitting function; wrapper function for this one is below
-fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0) {
+fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0, nthreads.ranger) {
   ## Partial out X's ----
   y <- y0
   treat <- treat0
@@ -9,8 +9,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
   samplesplit <- samplesplit0
   
   ses.theta <- ses.tau <- NULL
-  treat.partial <- partialOut(treat, X, replaceme)
-  y.partial <- partialOut(y, cbind(X), replaceme)
+  treat.partial <- partialOut(treat, X, replaceme, nthreads.ranger)
+  y.partial <- partialOut(y, cbind(X), replaceme, nthreads.ranger)
   if(!samplesplit){
     treat.partial <- .5*(treat.partial[replaceme==1]+treat.partial[replaceme==2])
     y.partial <- .5*(y.partial[replaceme==1]+y.partial[replaceme==2])
@@ -117,7 +117,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
   var1 <-
     ranger(res.sq ~ .,
            data = data.frame(treat2, X),
-           case.weights = 1 * (replaceme == 1))
+           case.weights = 1 * (replaceme == 1),
+           num.threads = nthreads.ranger)
   
   numvar <- 25
   var.treatperm <- 0
@@ -158,7 +159,9 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' @param alpha The desired level of the confidence band.
 #' @param samplesplit Whether to use a sample splitting approach. Default is \code{TRUE}.
 #' @param conformal Whether to generate a conformal bands or use a critical value from the
-#' normal approximation.  Default is \code{TRUE}.
+#' normal approximation.  Default is \code{TRUE}..
+#' @param nthreads.ranger Number of threads used internally by the \code{ranger} function 
+#' for random forests.  Default is \code{NULL}.
 #' @export
 #'
 #' @examples
@@ -172,8 +175,10 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0)
 #' # at least 10-50 initially, for exploratory analyses, with several hundred for 
 #' # publication quality. For large sample sizes, these numbers may be adjusted down.
 #' # These are only recommendations.
+#' # Threads are set to 1 to pass CRAN checks, but we suggest leaving it at the default
+#' # which ranger takse as the total number available.
 #' set.seed(1)
-#' m1 <- MDEI(y, treat, X, splits=1, alpha=.9)
+#' m1 <- MDEI(y, treat, X, splits=1, alpha=.9, nthreads.ranger = 1)
 #'
 #' # Accuracy
 #' cor(m1$tau.est, treat*2)
@@ -202,7 +207,8 @@ MDEI <- function(y,
                  splits = 10,
                  alpha = .9,
                  samplesplit = TRUE,
-                 conformal = TRUE) {
+                 conformal = TRUE,
+                 nthreads.ranger = NULL) {
   if(samplesplit==FALSE){
     splits <- 1
     y <- c(y,y)
@@ -248,9 +254,9 @@ MDEI <- function(y,
     replaceme[1:floor(n / 2)] <- 2
     if(samplesplit==TRUE) replaceme <- sample(replaceme)
     
-    singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat, samplesplit)
+    singlefit.2 <- fit.singlesubsample(y, treat, X, replaceme, Xmat, samplesplit, nthreads.ranger)
     singlefit.1 <-
-      fit.singlesubsample(y, treat, X, 3 - replaceme, Xmat, samplesplit)
+      fit.singlesubsample(y, treat, X, 3 - replaceme, Xmat, samplesplit,nthreads.ranger)
     #
     theta.run[replaceme == 1, i.runs] <- singlefit.1$theta.pred
     tau.run[replaceme == 1, i.runs] <- singlefit.1$tau.pred

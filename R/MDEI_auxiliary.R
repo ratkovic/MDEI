@@ -125,7 +125,7 @@ hl.var <- function (x) {
 }
 
 ## Partial out X
-partialOut <- function(y, X, replaceme) {
+partialOut <- function(y, X, replaceme, nthreads.ranger) {
    data.ranger1 <- data.frame(X)[replaceme==1,]
   # data.ranger2 <- data.frame(X)[replaceme==2,]
   y1 <- y[replaceme == 1]
@@ -135,7 +135,8 @@ partialOut <- function(y, X, replaceme) {
       data = data.frame(X),
       case.weights = length(y) * (replaceme == 1),
       num.trees = 1000,
-      write.forest = F
+      write.forest = F, 
+      num.threads = nthreads.ranger
     )
   #  preds1 <- predict(mod1, data = data.frame(X))[[1]]
   # y.partialout <- y - lm(y~I(mod1$predictions), weights = 1*(replaceme==2))$fitted#mod1$predictions
