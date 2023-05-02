@@ -55,7 +55,8 @@
 <span>  alpha <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>  samplesplit <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  conformal <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  nthreads.ranger <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  nthreads.ranger <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -93,6 +94,11 @@ normal approximation.  Default is <code>TRUE</code>..</p></dd>
 <dt>nthreads.ranger</dt>
 <dd><p>Number of threads used internally by the <code>ranger</code> function 
 for random forests.  Default is <code>NULL</code>.</p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>An optional logical value. If <code>TRUE</code> information 
+on the number of split samples completed is printed. Default is <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -144,13 +150,13 @@ for random forests.  Default is <code>NULL</code>.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Accuracy</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">tau.est</span>, <span class="va">treat</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1532451</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2630378</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">theta.est</span>, <span class="va">treat</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4225259</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4429622</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Coverage</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">CIs.tau</span><span class="op">-</span><span class="fl">2</span><span class="op">*</span><span class="va">treat</span>,<span class="fl">1</span>,<span class="va">prod</span><span class="op">)</span><span class="op">&lt;</span><span class="fl">0</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.52</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.47</span>
 </code></pre></div>
     </div>
   </div>
