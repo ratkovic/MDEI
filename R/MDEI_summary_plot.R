@@ -66,7 +66,7 @@ coverPlot <-
     )
     
     points(xvar, pointest, pch = 19, cex = cex.point)
-    print("Proporaiton of the time that the confidence interval contains sigval:")
+    print("Proportion of the time that the confidence interval contains signal:")
     print(mean(cover.curr))
     return(cover.curr)
   }

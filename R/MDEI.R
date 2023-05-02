@@ -162,6 +162,8 @@ fit.singlesubsample <- function(y0, treat0, X0, replaceme0, Xmat0, samplesplit0,
 #' normal approximation.  Default is \code{TRUE}..
 #' @param nthreads.ranger Number of threads used internally by the \code{ranger} function 
 #' for random forests.  Default is \code{NULL}.
+#' @param verbose 	An optional logical value. If \code{TRUE} information 
+#' on the number of split samples completed is printed. Default is \code{TRUE}.
 #' @export
 #'
 #' @examples
@@ -208,7 +210,8 @@ MDEI <- function(y,
                  alpha = .9,
                  samplesplit = TRUE,
                  conformal = TRUE,
-                 nthreads.ranger = NULL) {
+                 nthreads.ranger = NULL,
+                 verbose = TRUE) {
   if(samplesplit==FALSE){
     splits <- 1
     y <- c(y,y)
@@ -276,7 +279,7 @@ MDEI <- function(y,
     
     coefmat <- cbind(coefmat,singlefit.1$cormat.sparse,singlefit.2$cormat.sparse)
     
-    cat("Finished with cross-fit", i.runs, "\n")
+    if(verbose) cat("Finished with cross-fit", i.runs, "\n")
   }
   
   se.theta <-

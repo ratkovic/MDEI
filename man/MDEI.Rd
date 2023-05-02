@@ -12,7 +12,8 @@ MDEI(
   alpha = 0.9,
   samplesplit = TRUE,
   conformal = TRUE,
-  nthreads.ranger = NULL
+  nthreads.ranger = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ normal approximation.  Default is \code{TRUE}..}
 
 \item{nthreads.ranger}{Number of threads used internally by the \code{ranger} function 
 for random forests.  Default is \code{NULL}.}
+
+\item{verbose}{An optional logical value. If \code{TRUE} information 
+on the number of split samples completed is printed. Default is \code{FALSE}.}
 }
 \value{
 \describe{
