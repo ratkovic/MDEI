@@ -36,7 +36,7 @@ normal approximation.  Default is \code{TRUE}..}
 for random forests.  Default is \code{NULL}.}
 
 \item{verbose}{An optional logical value. If \code{TRUE} information 
-on the number of split samples completed is printed. Default is \code{FALSE}.}
+on the number of split samples completed is printed. Default is \code{TRUE}.}
 }
 \value{
 \describe{
