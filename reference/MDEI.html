@@ -150,13 +150,13 @@ on the number of split samples completed is printed. Default is <code>TRUE</code
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Accuracy</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">tau.est</span>, <span class="va">treat</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3378349</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.07540904</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">theta.est</span>, <span class="va">treat</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3986276</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3746146</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Coverage</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">m1</span><span class="op">$</span><span class="va">CIs.tau</span><span class="op">-</span><span class="fl">2</span><span class="op">*</span><span class="va">treat</span>,<span class="fl">1</span>,<span class="va">prod</span><span class="op">)</span><span class="op">&lt;</span><span class="fl">0</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.61</span>
 </code></pre></div>
     </div>
   </div>
